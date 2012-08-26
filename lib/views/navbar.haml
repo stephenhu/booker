@@ -1,0 +1,16 @@
+.navbar.navbar-fixed-top
+  .navbar-inner
+    .container-fluid
+      %a.btn.btn-navbar{ "data-toggle".to_sym => "collapse", "data-target".to_sym => ".nav-collapse" }
+        %span.icon-bar
+        %span.icon-bar
+        %span.icon-bar
+      %a.brand{:href => '/'}
+        booker 
+        %sup alpha
+      .nav-collapse
+        %ul.nav
+          %li.active
+            %a{:href => '/'} rooms
+          %li
+            %a{:href => '/requested'} today

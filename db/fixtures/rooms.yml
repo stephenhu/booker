@@ -1,0 +1,162 @@
+room1:
+  name: Crimson Tide
+  chinese: 满江红
+  capacity: 5
+  floor: 10
+  uuid: 1
+  adminonly: true
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room2:
+  name: Sandy Brook
+  chinese: 浣溪沙
+  capacity: 15
+  floor: 10
+  uuid: 2
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room3:
+  name: Fisherman Pride
+  chinese: 渔家傲
+  capacity: 5
+  floor: 10
+  uuid: 3
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room4:
+  name: Garden Spring
+  chinese: 沁园春
+  capacity: 15
+  floor: 10
+  uuid: 4
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room5:
+  name: Plum Blossom
+  chinese: 一剪梅
+  capacity: 5
+  floor: 10
+  uuid: 5
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room6:
+  name: Ocean Songs
+  chinese: 水调歌头
+  capacity: 8
+  floor: 10
+  uuid: 6
+  adminonly: true
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room7:
+  name: Fair Lady
+  chinese: 念奴娇
+  capacity: 5
+  floor: 10
+  uuid: 7
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room8:
+  name: BoF
+  chinese: 蝶恋花
+  capacity: 10 
+  floor: 10
+  uuid: 8
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room9:
+  name: Buddha Hymns
+  chinese: 菩萨蛮
+  capacity: 10
+  floor: 10
+  uuid: 9
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+room10:
+  name: Boat Song
+  chinese: 渔舟唱晚
+  capacity: 15
+  floor: 11
+  uuid: 11
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room11:
+  name: Mountain Creek
+  chinese: 高山流水
+  capacity: 15
+  floor: 11
+  uuid: 12
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room12:
+  name: Flying Daggers
+  chinese: 十面埋伏
+  capacity: 15
+  floor: 11
+  uuid: 13
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room13:
+  name: Spring Snow
+  chinese: 阳春白雪
+  capacity: 15
+  floor: 11
+  uuid: 14
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+
+room14:
+  name: Silver Cloud
+  chinese: 彩云追月
+  capacity: 15
+  floor: 11
+  uuid: 15
+  adminonly: false
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+room15:
+  name: Moon River
+  chinese: 春江花月夜
+  capacity: 20
+  floor: 11
+  uuid: 10
+  adminonly: true
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+

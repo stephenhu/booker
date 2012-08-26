@@ -1,0 +1,20 @@
+<% 10.times do |i| %>
+<% user = "user" + i.to_s %>
+<%= user %>:
+<% email = "user" + i.to_s + "@vmware.com" %>
+  email: <%= email %>
+  canonical: <%= user %>
+  team_id: <%= Random.rand(5) %>
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+<% end %>
+
+user10:                                                                          
+  email: hus@vmware.com                                                         
+  first: stephen                                                                
+  last: hu                                                                      
+  canonical: hus                                                                
+  team_id: 2                                                                    
+  created_at: <%= Time.now %>                                                   
+  updated_at: <%= Time.now %>   
+       

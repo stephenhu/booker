@@ -1,0 +1,18 @@
+.container-fluid
+  .row-fluid
+    .span12
+      %dl
+        %dt
+          %h2= topic.name
+          %dd
+            -topic.tags.each do |tag|
+              %button.btn.btn-success.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}' ); return false;"}
+                = tag.tag
+          %dd.lead
+            = topic.summary
+          %dd
+            %button.btn.btn-primary.btn-mini
+              = "like (" + topic.votes.to_s + ")"
+            %button.btn.btn-info.btn-mini
+              = "comments (" + topic.comments.length.to_s + ")"
+

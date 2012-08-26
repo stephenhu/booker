@@ -1,0 +1,13 @@
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+
+sup {
+  font-size: 9px;
+}
+
+.active {
+  color: #ff0000;
+}
+

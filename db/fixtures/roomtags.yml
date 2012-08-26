@@ -1,0 +1,16 @@
+roomtag1:
+  tag_id: 1
+  room_id: 1
+
+roomtag2:
+  tag_id: 2
+  room_id: 1
+
+roomtag3:
+  tag_id: 3
+  room_id: 1
+
+roomtag4:
+  tag_id: 1
+  room_id: 2
+

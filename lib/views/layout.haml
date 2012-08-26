@@ -1,0 +1,27 @@
+!!!
+%html{ "lang" => "en" }
+
+ %head
+  %title booker - by vmware (alpha)
+  %link{ :rel => "stylesheet", :href => url("bootstrap/css/bootstrap.css"), :type => "text/css" }
+  %link{ :rel => "stylesheet", :href => url("styles/booker.css"), :type => "text/css" }
+  %link{ :rel => "stylesheet", :href => url("bootstrap/css/bootstrap-responsive.css"), :type => "text/css" }
+  %script{ :src => url("scripts/booker.js") }
+  %script{ :src => url("scripts/jquery-1.7.2.js")}
+  %script{ :src => url("scripts/jquery/plugins/jquery.cookie.js") }
+  %script{ :src => url("scripts/jquery/plugins/jquery.maphilight.js") }
+  :javascript
+    $(function() {
+      $('.floor').maphilight();
+    });
+  :plain
+   <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+   <!--[if lt IE 9]>
+     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+   <![endif]-->
+
+ %body
+  = haml :navbar
+  = yield
+
+ = haml :footer

@@ -1,0 +1,25 @@
+team1:
+  name: aurora
+  created_at: <%= Time.now() %>
+  updated_at: <%= Time.now() %>
+
+team2:
+  name: cf
+  created_at: <%= Time.now() %>
+  updated_at: <%= Time.now() %>
+
+team3:
+  name: ga
+  created_at: <%= Time.now() %>
+  updated_at: <%= Time.now() %>
+
+team4:
+  name: greenplum
+  created_at: <%= Time.now() %>
+  updated_at: <%= Time.now() %>
+
+team5:
+  name: mozy
+  created_at: <%= Time.now() %>
+  updated_at: <%= Time.now() %>
+

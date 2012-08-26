@@ -1,0 +1,9 @@
+.container-fluid
+  .row-fluid
+    .span12
+      %h2= tag
+      - tags.each do |topic|
+        %dl
+          %dt
+            %a{:href => url("/topics/#{topic.id}")}
+              = topic.name

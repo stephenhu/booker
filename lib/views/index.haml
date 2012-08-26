@@ -1,0 +1,24 @@
+.container-fluid
+  .row-fluid
+    .span12
+      - rooms.each do |room|
+        %dl
+          %dt
+            %h2
+              = room.name 
+              %a{:href => url("/users/")}
+                %small
+                  = "(something)"
+            %dd
+              -room.tags.each do |tag|
+                %button.btn.btn-success.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}' ); return false;"}
+                  = tag.tag
+            %dd.lead
+              = room.description
+            %dd
+              %button.btn.btn-primary.btn-mini{:onclick => "vote(); return false;"}
+                = "like (0)"
+              %button.btn.btn-info.btn-mini
+                = "comments (0)"
+        %hr
+
