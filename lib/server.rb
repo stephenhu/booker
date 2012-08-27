@@ -101,6 +101,11 @@ get "/users/:name" do
 
 end
 
+get "/about" do
+
+  haml :about
+
+end
 
 # REST endpoints
 
@@ -118,6 +123,16 @@ get "/rest/checktoken/:token" do
 end
 
 post "/rest/reservations" do
+
+ puts params[:email]
+
+ if params[:email].empty?
+   puts request.get_cookie("booker")
+ else
+   token = authenticate(params[:email])
+   response.set_cookie( "booker", :value => token, :path => "/",
+     :expires => Time.now + (60*60*24*30) )
+ end
 
  puts params[:uuid]
  puts params[:userid]

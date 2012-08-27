@@ -1,8 +1,17 @@
+:javascript
+  $(function() {
+    $("#datepicker").datepicker();
+    check_token();
+  });
 .container-fluid
   .row-fluid
     .span12
       %h2 book meeting
+      %input.input-largei.hidden{ :type => "email", :id => "email", :placeholder => "email" }
+      %span.error.hidden{ :id => "email-error" } required
+      %br
       %input.input-xlarge{ :type => "text", :id => "title", :placeholder => "meeting title" }
+      %span.error.hidden{ :id => "title-error" } required 
       %br
       %select.input-xxlarge{ :id => "uuid" }
         - rooms.each do |room|
@@ -13,6 +22,7 @@
             %option{ :value => "room.uuid" }
               = room.full_name
       %form.form-inline
+        %input{ :type => "text", :id => "datepicker", :placeholder => "start date" }
         %select{ :id => "start" }
           - 13.times do |i|
             - if i == 3 
@@ -32,7 +42,9 @@
           %option{ :value => "150" } 3 hours
           %option{ :value => "240" } 4 hours
           %option{ :value => "720" } all day
+        %span.error.hidden{ :id => "duration-error" } required 
       %textarea.field.span8{ :rows => 10, :id => "details", :placeholder => "meeting details" } 
+      %span.error.hidden{ :id => "details-error" } required 
       %br
       %button.btn.btn-primary.btn-large{ :onclick => "reserve(); return false;" } reserve
       %hr

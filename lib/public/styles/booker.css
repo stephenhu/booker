@@ -22,3 +22,15 @@ sup {
   display: block;
 }
 
+.dark {
+  font-weight: 800;
+}
+
+.hidden {
+  display: none;
+}
+
+.error {
+  color: #ff0000;
+}
+
