@@ -1,12 +1,14 @@
 .container-fluid
   .row-fluid
     .span12
+      %a{ :href => "/floors/10" } 10th Floor
+      %h2 11th Floor
       %img{:src => url('images/11.png'), :class => "floor", :width => 640, :usemap => "#floorplan"}
       %map{:name => "floorplan"}
-        %area{:shape => "rect", :title => "boat song/渔舟唱晚", :coords => "474, 136, 535, 183", :href => "#"}
-        %area{:shape => "rect", :title => "flying daggers/十面埋伏", :coords => "561, 440, 628, 535", :href => "#"}
-        %area{:shape => "rect", :title => "spring snow/阳春白雪", :coords => "323, 518, 404, 590", :href => "#"}
-        %area{:shape => "rect", :title => "silver cloud/彩云追月", :coords => "242, 518, 322, 590", :href => "#"}
-        %area{:shape => "rect", :title => "moon river/春江花月夜", :coords => "106, 518, 241, 590", :href => "#"}
-        %area{:shape => "rect", :title => "mountain creek/高山流水", :coords => "474, 346, 535, 388", :href => "#"}
+        %area{:shape => "rect", :title => "boat song/渔舟唱晚", :coords => "474, 136, 535, 183", :href => "rooms/11"}
+        %area{:shape => "rect", :title => "flying daggers/十面埋伏", :coords => "561, 440, 628, 535", :href => "rooms/13"}
+        %area{:shape => "rect", :title => "spring snow/阳春白雪", :coords => "323, 518, 404, 590", :href => "rooms/14"}
+        %area{:shape => "rect", :title => "silver cloud/彩云追月", :coords => "242, 518, 322, 590", :href => "rooms/15"}
+        %area{:shape => "rect", :title => "moon river/春江花月夜", :coords => "106, 518, 241, 590", :href => "rooms/10"}
+        %area{:shape => "rect", :title => "mountain creek/高山流水", :coords => "474, 346, 535, 388", :href => "rooms/12"}
 %hr

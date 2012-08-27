@@ -1,7 +1,8 @@
 reservation1:
   room_id: 1
   user_id: 3
-  summary: architecture overview
+  title: architecture overview
+  details: webex dial in info
   start: 8/22/2012
   end: 8/22/2012
   starttime: 08:30:00

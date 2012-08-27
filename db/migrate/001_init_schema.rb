@@ -46,7 +46,8 @@ class InitSchema < ActiveRecord::Migration
       t.belongs_to :user
       t.integer :room_id
       t.integer :user_id
-      t.text :summary
+      t.string :title
+      t.text :details
       t.date :start
       t.date :end
       t.time :starttime

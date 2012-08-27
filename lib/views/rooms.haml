@@ -1,0 +1,35 @@
+.container-fluid
+  .row-fluid
+    .span12
+      %dl
+        %dt
+          %h2= room.descriptive_name
+          %dd
+            -room.tags.each do |tag|
+              %button.btn.btn-success.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}' ); return false;"}
+                = tag.tag
+          %dd.lead
+            = room.description
+          %dd
+            %table.table
+              %th organizer
+              %th title
+              %th start
+              %th end
+              %th recurring
+              %th action 
+              - 12.times do |i|
+                %tr
+                  %td hus
+                  %td cloud foundry weekly
+                  %td= "#{i+7}:00"
+                  %td= "#{i+7+1}:00"
+                  %td weekly
+                  %td
+                    %button.btn.btn-info.btn-mini book 
+          %dd
+            %button.btn.btn-primary.btn-mini
+              = "like (0)"
+            %button.btn.btn-info.btn-mini
+              = "comments (0)"
+

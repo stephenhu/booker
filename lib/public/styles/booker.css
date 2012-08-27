@@ -11,3 +11,14 @@ sup {
   color: #ff0000;
 }
 
+.big {
+  font-size: 60px;
+  font-weight: 400;
+}
+
+.medium {
+  font-size: 48px;
+  color: #00583a;
+  display: block;
+}
+

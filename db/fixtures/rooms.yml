@@ -160,3 +160,13 @@ room15:
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
 
+room16:
+  name: Pantry
+  chinese: 大厅
+  capacity: 100
+  floor: 10
+  uuid: 16
+  adminonly: true
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+

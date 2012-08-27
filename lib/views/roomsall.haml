@@ -1,0 +1,29 @@
+.container-fluid
+  .row-fluid
+    .span12
+      %table.table
+        %th room
+        %th floor
+        %th tags
+        %th capacity
+        %th
+        - rooms.each do |room|
+          %tr.success
+            %td
+              %a{:href => url("/rooms/#{room.id}")}
+                = room.combined_name
+            %td
+              = room.floor
+            %td
+              -room.tags.each do |tag|
+                - if tag.tag == "admin"
+                  %button.btn.btn-warning.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}' ); return false;"}
+                    = tag.tag
+                - else
+                  %button.btn.btn-success.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}' ); return false;"}
+                    = tag.tag
+            %td
+              = room.capacity
+            %td
+              %button.btn.btn-info.btn-mini{ :onclick => "redirect( 'reservations', '#{room.id}' ); return false" } book 
+

@@ -5,4 +5,4 @@ gem "haml"
 gem "sinatra"
 gem "sinatra-contrib"
 gem "thin"
-
+gem "yajl-ruby"

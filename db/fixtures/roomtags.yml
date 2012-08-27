@@ -1,16 +1,75 @@
-roomtag1:
+<% 16.times do |i| %>
+<% room = "roomtag#{i}" %>
+<%= room %>:
+  tag_id: 2
+  room_id: <%= i %>
+<% end %>
+
+roomtag16:
+  tag_id: 4
+  room_id: 1
+
+roomtag17:
+  tag_id: 4
+  room_id: 6
+
+roomtag18:
+  tag_id: 4
+  room_id: 15
+
+roomtag19:
+  tag_id: 1
+  room_id: 16
+
+roomtag20:
   tag_id: 1
   room_id: 1
 
-roomtag2:
-  tag_id: 2
-  room_id: 1
-
-roomtag3:
-  tag_id: 3
-  room_id: 1
-
-roomtag4:
+roomtag21:
   tag_id: 1
   room_id: 2
+
+roomtag22:
+  tag_id: 1
+  room_id: 3
+
+roomtag23:
+  tag_id: 1
+  room_id: 4
+
+roomtag24:
+  tag_id: 1
+  room_id: 5
+
+roomtag25:
+  tag_id: 1
+  room_id: 6
+
+roomtag26:
+  tag_id: 1
+  room_id: 10
+
+roomtag27:
+  tag_id: 1
+  room_id: 11
+
+roomtag28:
+  tag_id: 1
+  room_id: 12
+
+roomtag29:
+  tag_id: 1
+  room_id: 13
+
+roomtag30:
+  tag_id: 1
+  room_id: 14
+
+roomtag31:
+  tag_id: 1
+  room_id: 15
+
+roomtag32:
+  tag_id: 3
+  room_id: 15
 

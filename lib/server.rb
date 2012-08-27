@@ -5,6 +5,7 @@ require "active_record"
 require "openssl"
 require "sinatra"
 require "sinatra/cookies"
+require "yajl"
 
 Dir.glob("./models/*").each { |r| require r }
 
@@ -38,27 +39,56 @@ end
 
 get "/" do
 
-  haml :floor10
+  @rooms = Room.all
+
+  haml :index, :locals => { :rooms => @rooms }
  
 end
 
-get "/floors/floor11" do
+get "/floors/?.?:floorid?" do
 
-  haml :floor11
+  case params[:floorid]
+  when nil
+    haml :floor10
+  when "10"
+    haml :floor10
+  when "11"
+    haml :floor11
+  else
+    haml :error, :locals => { :msg => "Floor Does Not Exist" }
+  end
+
+end
+
+get "/rooms/?.?:roomid?" do
+
+  case params[:roomid]
+  when nil
+    @rooms = Room.all
+    haml :roomsall, :locals => { :rooms => @rooms }
+  else
+    @room = Room.where( 'id' => params[:roomid].to_i ).first
+    if @room.nil?
+      haml :error, :locals => { :msg => "Room Does Not Exist" }
+    else
+      haml :rooms, :locals => { :room => @room }
+    end
+  end
+
+end
+
+get "/reservations/?.?:roomid?" do
+
+  @rooms = Room.all
+    
+  haml :reservations, :locals => { :rooms => @rooms, :id => params[:roomid] }
 
 end
 
 get "/tags/:tagname" do
 
-  @ts = Topic.joins(:tags).where('tags.tag' => params[:tagname])
+  @ts = Room.joins(:tags).where('tags.tag' => params[:tagname])
   haml :tags, :locals => { :tag => params[:tagname], :tags => @ts }
-
-end
-
-get "/topics/:topicid" do
-
-  @topic = Topic.joins(:tags).where('id' => params[:topicid]).first
-  haml :topics, :locals => { :topic => @topic }
 
 end
 
@@ -71,33 +101,30 @@ get "/users/:name" do
 
 end
 
-get "/getcookie" do
-  
-  puts request.cookies["topics"]
-
-end
-
-get "/setcookie/:value" do
-  response.set_cookie( "topics", params[:value] )
-end
-
-get "/test/:email" do
-
-  u = User.new( :email => params[:email] )
-  u.save
-
-end
 
 # REST endpoints
 
 post "/rest/authenticate" do
   token = authenticate(params[:email])
-  response.set_cookie( "topics", token )
+  response.set_cookie( "booker", :value => token, :path => '/',
+    :expires => Time.now + (60*60*24*30) )
+  return Yajl::Encoder.encode(token)
 end
 
 get "/rest/checktoken/:token" do
 
   puts params[:token]
 
+end
+
+post "/rest/reservations" do
+
+ puts params[:uuid]
+ puts params[:userid]
+ puts params[:duration]
+ puts params[:start]
+ puts params[:details]
+ puts params[:title]
+ 
 end
 
