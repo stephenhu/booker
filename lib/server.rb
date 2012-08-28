@@ -60,7 +60,26 @@ helpers do
   end
 
   def get_end( start, duration )
-    return start + duration.to_f * 60
+    return start + duration.to_f * 3600
+  end
+
+  def check_conflict(meetings)
+
+    meetings.each do |meeting|
+
+      r = Reservation.where( 
+        "room_id = :roomid AND ((start <= :start AND end > :start) OR (start <= :end AND end > :end)",
+        { :roomid => meeting[:roomid], :start => meeting[:start], :end => meeting[:end] } )
+
+      if r.length > 0
+        return true 
+      end
+
+
+    end
+
+    return false
+
   end
 
 end
@@ -173,13 +192,36 @@ post "/rest/reservations" do
   s = get_start( params[:start], params[:time] )
   e = get_end( s, params[:duration] )
   puts "#{s} - #{e}"
-  Reservation.create( :user_id => user.id,
-                      :room_id => params[:roomid],
-                      :title => params[:title],
-                      :details => params[:details],
-                      :start => s,
-                      :end => e,
-                      :recurring => params[:recurring] )
+
+  # single day request
+
+  case params[:recurring].to_i
+  when 1
+    meetings = { :roomid => params[:roomid], :start => s, :end => e }
+  when 2
+    # calculate 3 months of weekly
+  when 4
+    # calculate 3 months of bi-weekly
+  when 8
+    # calculate 3 months of monthly
+  end
+
+  if check_conflict( [
+    { :roomid => params[:roomid], :start => s, :end => e } ] )
+    return Yajl::Encoder.encode("6000, room conflict")
+  else
+
+    Reservation.create( :user_id => user.id,
+                        :room_id => params[:roomid],
+                        :title => params[:title],
+                        :details => params[:details],
+                        :start => s,
+                        :end => e,
+                        :recurring => params[:recurring] )
  
+    return Yajl::Encoder.encode("0, success")
+
+  end
+
 end
 

@@ -1,10 +1,13 @@
-- navbar active menu items
++ navbar active menu items
 - single room layout for day
 - single room layout for week
 - recurring logic
-- meeting conflict logic
-- email
++ meeting conflict logic
+- email, sendgrid
+- ics generation
 - modify calendar
 - user reservations
+- validation of recurring logic
 - search
 - color coded listing (green for available now, blue for taken, gray for almost ready)
+- admin only rooms, acl
