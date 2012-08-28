@@ -48,10 +48,8 @@ class InitSchema < ActiveRecord::Migration
       t.integer :user_id
       t.string :title
       t.text :details
-      t.date :start
-      t.date :end
-      t.time :starttime
-      t.integer :duration
+      t.time :start
+      t.time :end
       t.integer :recurring
       t.timestamps
     end

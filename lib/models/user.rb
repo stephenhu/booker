@@ -9,13 +9,7 @@ class User < ActiveRecord::Base
 
   belongs_to :team
 
-  before_create :set_salt
-  before_create :set_uuid
   before_create :set_canonical
-
-  def set_salt
-    self.salt = SecureRandom.hex(8)
-  end
 
   def set_canonical
 
@@ -27,10 +21,6 @@ class User < ActiveRecord::Base
       self.canonical = generate_canonical
     end
 
-  end
-
-  def set_uuid
-    self.uuid = Digest::MD5.hexdigest(email + salt)
   end
 
   def canonical_name

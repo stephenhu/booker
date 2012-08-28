@@ -3,10 +3,8 @@ reservation1:
   user_id: 3
   title: architecture overview
   details: webex dial in info
-  start: 8/22/2012
-  end: 8/22/2012
-  starttime: 08:30:00
-  duration: 30
+  start: <%= Time.now %>
+  end: <%= Time.now %>
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
 

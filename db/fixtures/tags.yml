@@ -18,3 +18,8 @@ tag4:
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
 
+tag5:
+  tag: whiteboard
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+

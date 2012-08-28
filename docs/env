@@ -1,0 +1,7 @@
+- centos 6.3 (64 bit)
+- gcc
+- rbenv
+- rbenv-build
+- libz-devel
+- ruby 1.9.2-p320
+

@@ -1,6 +1,7 @@
 :javascript
   $(function() {
-    $("#datepicker").datepicker();
+    $("#datepicker1").datepicker();
+    $("#datepicker2").datepicker();
     check_token();
   });
 .container-fluid
@@ -16,33 +17,51 @@
       %select.input-xxlarge{ :id => "uuid" }
         - rooms.each do |room|
           - if room.id == id.to_i
-            %option{ :value => "room.uuid", :selected => "selected" } 
+            %option{ :value => "#{room.uuid}", :selected => "selected" } 
               = room.full_name
           - else
-            %option{ :value => "room.uuid" }
+            %option{ :value => "#{room.uuid}" }
               = room.full_name
       %form.form-inline
-        %input{ :type => "text", :id => "datepicker", :placeholder => "start date" }
+        %input#datepicker1{ :type => "text", :placeholder => "start date", :value => "#{Date.today.strftime( "%m/%d/%Y" )}" }
+        %input#datepicker2{ :type => "text", :placeholder => "end date", :value => "#{Date.today.strftime( "%m/%d/%Y" )}", :disabled => "disabled" }
+      %form.form-inline
         %select{ :id => "start" }
           - 13.times do |i|
             - if i == 3 
-              %option{ :value => "#{i+6}:00", :selected => "selected" }
+              %option{ :value => "#{i+6}", :selected => "selected" }
                 = "#{i+6}:00"
             - else
-              %option{ :value => "#{i+6}:00" }
+              %option{ :value => "#{i+6}" }
                 = "#{i+6}:00"
-            %option{ :value => "#{i+6}:30" }
+            %option{ :value => "#{i+6}.5" }
               = "#{i+6}:30"
         %select{ :id => "duration", :value => "" }
           %option{ :selected => "selected" } select duration
-          %option{ :value => "30" } 30 minutes
-          %option{ :value => "60" } 1 hour
-          %option{ :value => "90" } 1.5 hours
-          %option{ :value => "120" } 2 hours
-          %option{ :value => "150" } 3 hours
-          %option{ :value => "240" } 4 hours
-          %option{ :value => "720" } all day
-        %span.error.hidden{ :id => "duration-error" } required 
+          %option{ :value => ".5" } 30 minutes
+          %option{ :value => "1" } 1 hour
+          %option{ :value => "1.5" } 1.5 hours
+          %option{ :value => "2" } 2 hours
+          %option{ :value => "3" } 3 hours
+          %option{ :value => "4" } 4 hours
+          %option{ :value => "12" } all day
+        %span.error.hidden{ :id => "duration-error" } required
+      %form.form-inline
+        %label.radio
+          %input#recur1{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "1", :checked => "checked" }
+            non-recurring
+        %label.radio                                                            
+          %input#recur2{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "2" }
+            weekly
+        %label.radio                                                            
+          %input#recur3{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "4" }
+            bi-weekly
+        %label.radio
+          %input#recur4{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "8" }
+            monthly
+        %label.radio
+          %input#recur5{ :type => "radio", :onclick => "multi_day();", :name => "recurring", :value => "16" }
+            multi-day
       %textarea.field.span8{ :rows => 10, :id => "details", :placeholder => "meeting details" } 
       %span.error.hidden{ :id => "details-error" } required 
       %br

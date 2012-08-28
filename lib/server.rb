@@ -9,10 +9,13 @@ require "yajl"
 
 Dir.glob("./models/*").each { |r| require r }
 
-@config =
+config =
   YAML.load_file('/home/hu/projects/booker/config/database.yml')['development']
 
-ActiveRecord::Base.establish_connection @config
+ActiveRecord::Base.establish_connection config
+
+key = "1234567890000qwertyasdflkjzxcvnabcde88888888888888888888888888888a"
+iv  = "blahblahblahpasswordpasswordsecret"
 
 helpers do
 
@@ -20,19 +23,44 @@ helpers do
     return request.cookies["booker"]
   end
 
+  def register(email)
+    User.create(:email => email)
+  end
+
   def authenticate(email)
 
     u = User.find_by_email(email)
-    cipher = OpenSSL::Cipher::AES.new( 128, :CBC )
-    cipher.encrypt
 
-    key = cipher.random_key
-    iv  = cipher.random_iv
+    if u.nil?
+      u = register(email)
+    end
 
-    token = cipher.update(email) + cipher.final
+    #cipher = OpenSSL::Cipher.new("bf")
+    #cipher.encrypt
+
+    #token = cipher.update(email) + cipher.final
     
-    return Base64.encode64(token)
+    return Base64.encode64(email)
 
+  end
+
+  def extract_user(token)
+    
+    #decipher = OpenSSL::Cipher.new("bf")
+    #decipher.decrypt
+
+    #email = decipher.update(Base64.decode64(token)) + decipher.final
+
+    return User.find_by_email(Base64.decode64(token))
+   
+  end
+
+  def get_start( d, start )
+    return Date.strptime( d, "%m/%d/%Y" ).to_time + start.to_f * 3600
+  end
+
+  def get_end( start, duration )
+    return start + duration.to_f * 60
   end
 
 end
@@ -109,37 +137,49 @@ end
 
 # REST endpoints
 
-post "/rest/authenticate" do
-  token = authenticate(params[:email])
-  response.set_cookie( "booker", :value => token, :path => '/',
-    :expires => Time.now + (60*60*24*30) )
-  return Yajl::Encoder.encode(token)
-end
+#post "/rest/authenticate" do
+  #token = authenticate(params[:email])
+  #response.set_cookie( "booker", :value => token, :path => '/',
+  #  :expires => Time.now + (60*60*24*30) )
+  #return Yajl::Encoder.encode(token)
+#end
 
-get "/rest/checktoken/:token" do
-
-  puts params[:token]
-
-end
+#get "/rest/checktoken/:token" do
+#  puts params[:token]
+#end
 
 post "/rest/reservations" do
 
- puts params[:email]
+  if params[:email].empty?
+    token = request.cookies["booker"]
+  else
 
- if params[:email].empty?
-   puts request.get_cookie("booker")
- else
-   token = authenticate(params[:email])
-   response.set_cookie( "booker", :value => token, :path => "/",
-     :expires => Time.now + (60*60*24*30) )
- end
+    # not authenticated
+    token = authenticate(params[:email])
+    puts token
+    response.set_cookie( "booker", :value => token, :path => "/",
+      :expires => Time.now + (60*60*24*30) )
 
- puts params[:uuid]
- puts params[:userid]
- puts params[:duration]
- puts params[:start]
- puts params[:details]
- puts params[:title]
+  end
+  
+  user = extract_user(token)
+
+  enddate = params[:end]
+
+  if params[:recurring] != 1
+    enddate = params[:start]
+  end
+
+  s = get_start( params[:start], params[:time] )
+  e = get_end( s, params[:duration] )
+  puts "#{s} - #{e}"
+  Reservation.create( :user_id => user.id,
+                      :room_id => params[:roomid],
+                      :title => params[:title],
+                      :details => params[:details],
+                      :start => s,
+                      :end => e,
+                      :recurring => params[:recurring] )
  
 end
 
