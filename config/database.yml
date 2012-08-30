@@ -4,3 +4,11 @@ development:
   pool: 5
   timeout: 5000
 
+production:
+  adapter: mysql
+  encoding: utf8
+  database: booker
+  username: root
+  password:
+  socket: /tmp/mysql.sock
+

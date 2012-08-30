@@ -7,6 +7,8 @@ require "sinatra"
 require "sinatra/cookies"
 require "yajl"
 
+enable :logging
+
 Dir.glob("./models/*").each { |r| require r }
 
 config =
@@ -68,7 +70,7 @@ helpers do
     meetings.each do |meeting|
 
       r = Reservation.where( 
-        "room_id = :roomid AND ((start <= :start AND end > :start) OR (start <= :end AND end > :end)",
+        "room_id = :roomid AND ((start <= :start AND end > :start) OR (start <= :end AND end > :end))",
         { :roomid => meeting[:roomid], :start => meeting[:start], :end => meeting[:end] } )
 
       if r.length > 0
@@ -79,6 +81,89 @@ helpers do
     end
 
     return false
+
+  end
+
+  def get_recurring( roomid, frequency, s, e )
+
+    meetings = Array.new
+
+    case frequency.to_i                                                  
+    when 1                                                                        
+      hash = { :roomid => roomid, :start => s, :end => e }               
+      meetings.push hash                                                          
+    when 2                                                                        
+# calculate 3 months of weekly                                              
+      s2 = s                                                                      
+      e2 = e                                                                      
+      12.times do |i|                                                             
+        hash = { :roomid => roomid, :start => s2, :end => e2 }           
+        s2 = s2 + 7 * 60 * 60 * 24                                                
+        e2 = e2 + 7 * 60 * 60 * 24                                                
+        meetings.push hash                                                        
+      end                                                                         
+    when 4                                                                        
+      s4 = s                                                                      
+      e4 = e                                                                      
+# calculate 3 months of bi-weekly                                           
+      6.times do |i|                                                              
+        hash = { :roomid => roomid, :start => s4, :end => e4 }           
+        s4 = s4 + 14 * 60 * 60 * 24                                               
+        e4 = e4 + 14 * 60 * 60 * 24                                               
+        meetings.push hash                                                        
+      end                                                                         
+    when 8                                                                        
+# calculate 3 months of monthly                                             
+      s8 = s                                                                      
+      e8 = e                                                                      
+      3.times do |i|                                                              
+        hash = { :roomid => roomid, :start => s8, :end => e8 }           
+        s8 = s8 + 28 * 60 * 60 * 24                                               
+        e8 = e8 + 28 * 60 * 60 * 24                                               
+        meetings.push hash                                                        
+      end                                                                         
+    end
+
+    return meetings
+
+  end
+
+  def get_multi_day( roomid, s, e )
+    
+    meetings = Array.new
+
+    end_date = Date.strptime( e, "%m/%d/%Y" )
+    delta = (end_date - s.to_date + 1).to_i
+ 
+    delta.times do |day|
+      start_time = s + day * 60 * 60 * 24
+      end_date = start_time.to_date
+      end_time   = end_date.to_time + 18 * 60 * 60 
+      puts "day = #{day} start = #{start_time} end = #{end_time} wday = #{end_date.wday}"
+      if !end_date.saturday? and !end_date.sunday?
+        hash = { :roomid => roomid, :start => start_time, :end => end_time }
+        puts hash
+        meetings.push hash
+      end
+    end
+
+    return meetings
+
+  end
+ 
+  def reserve( userid, title, details, recurring, meetings ) 
+
+    meetings.each do |meeting|
+
+      Reservation.create( :user_id => userid,                                    
+                          :room_id => meeting[:roomid],                            
+                          :title => title,                               
+                          :details => details,                           
+                          :start => meeting[:start],                                            
+                          :end => meeting[:end],                                              
+                          :recurring => recurring )
+
+    end
 
   end
 
@@ -154,21 +239,9 @@ get "/about" do
 
 end
 
-# REST endpoints
-
-#post "/rest/authenticate" do
-  #token = authenticate(params[:email])
-  #response.set_cookie( "booker", :value => token, :path => '/',
-  #  :expires => Time.now + (60*60*24*30) )
-  #return Yajl::Encoder.encode(token)
-#end
-
-#get "/rest/checktoken/:token" do
-#  puts params[:token]
-#end
-
 post "/rest/reservations" do
 
+  logger.info "reservation request received"
   if params[:email].empty?
     token = request.cookies["booker"]
   else
@@ -184,8 +257,9 @@ post "/rest/reservations" do
   user = extract_user(token)
 
   enddate = params[:end]
+  puts enddate
 
-  if params[:recurring] != 1
+  if params[:recurring].to_i != 1 and params[:recurring].to_i != 16
     enddate = params[:start]
   end
 
@@ -193,32 +267,24 @@ post "/rest/reservations" do
   e = get_end( s, params[:duration] )
   puts "#{s} - #{e}"
 
-  # single day request
-
-  case params[:recurring].to_i
-  when 1
-    meetings = { :roomid => params[:roomid], :start => s, :end => e }
-  when 2
-    # calculate 3 months of weekly
-  when 4
-    # calculate 3 months of bi-weekly
-  when 8
-    # calculate 3 months of monthly
+  if params[:recurring].to_i == 16
+    meetings = get_multi_day( params[:roomid], s, params[:end] )
+  else
+    meetings = get_recurring( params[:roomid], params[:recurring], s, e )
   end
 
-  if check_conflict( [
-    { :roomid => params[:roomid], :start => s, :end => e } ] )
+  if check_conflict(meetings)
     return Yajl::Encoder.encode("6000, room conflict")
   else
 
-    Reservation.create( :user_id => user.id,
-                        :room_id => params[:roomid],
-                        :title => params[:title],
-                        :details => params[:details],
-                        :start => s,
-                        :end => e,
-                        :recurring => params[:recurring] )
- 
+    result = reserve( user.id, params[:title], params[:details],
+      params[:recurring], meetings )
+
+    #if result == 0
+    #  return Yajl::Encoder.encode("0, success")
+    #else
+    #  return Yajl::Encoder.encode("5000, Internal Error")
+    #end
     return Yajl::Encoder.encode("0, success")
 
   end
