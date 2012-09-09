@@ -2,6 +2,7 @@ require "base64"
 require "haml"
 require "mysql"
 require "active_record"
+require "active_support/core_ext/time/calculations"
 require "openssl"
 require "sinatra"
 require "sinatra/cookies"
@@ -20,10 +21,6 @@ key = "1234567890000qwertyasdflkjzxcvnabcde88888888888888888888888888888a"
 iv  = "blahblahblahpasswordpasswordsecret"
 
 helpers do
-
-  def check_auth
-    return request.cookies["booker"]
-  end
 
   def register(email)
     User.create(:email => email)
@@ -70,8 +67,10 @@ helpers do
     meetings.each do |meeting|
 
       r = Reservation.where( 
-        "room_id = :roomid AND ((start <= :start AND end > :start) OR (start <= :end AND end > :end))",
-        { :roomid => meeting[:roomid], :start => meeting[:start], :end => meeting[:end] } )
+        "room_id = :roomid AND ((start <= :start AND end > :start)" +
+        " OR (start <= :end AND end > :end))",
+        { :roomid => meeting[:roomid], :start => meeting[:start],
+        :end => meeting[:end] } )
 
       if r.length > 0
         return true 
@@ -89,10 +88,10 @@ helpers do
     meetings = Array.new
 
     case frequency.to_i                                                  
-    when 1                                                                        
+    when 0                                                                        
       hash = { :roomid => roomid, :start => s, :end => e }               
       meetings.push hash                                                          
-    when 2                                                                        
+    when 1                                                                        
 # calculate 3 months of weekly                                              
       s2 = s                                                                      
       e2 = e                                                                      
@@ -102,7 +101,7 @@ helpers do
         e2 = e2 + 7 * 60 * 60 * 24                                                
         meetings.push hash                                                        
       end                                                                         
-    when 4                                                                        
+    when 2                                                                        
       s4 = s                                                                      
       e4 = e                                                                      
 # calculate 3 months of bi-weekly                                           
@@ -112,7 +111,7 @@ helpers do
         e4 = e4 + 14 * 60 * 60 * 24                                               
         meetings.push hash                                                        
       end                                                                         
-    when 8                                                                        
+    when 3                                                                        
 # calculate 3 months of monthly                                             
       s8 = s                                                                      
       e8 = e                                                                      
@@ -167,6 +166,101 @@ helpers do
 
   end
 
+  def init_schedule( hour_start, hour_end )
+
+    schedule = Hash.new
+
+    for i in hour_start ... hour_end
+
+      top = { :organizer => "",
+        :title => "",
+        :start => "#{i}:00",
+        :end   => "#{i}:30",
+        :recurring => "",
+        :open => true }
+
+      bottom = { :organizer => "",
+        :title => "",
+        :start => "#{i}:30",
+        :end   => "#{i+1}:00",
+        :recurring => "",
+        :open => true }
+
+      schedule[i.to_f]       = top
+      schedule[i.to_f+0.5]   = bottom
+    
+    end
+
+    return schedule
+
+  end
+
+  def get_schedule(roomid)
+
+    @book = Reservation.where(
+      "room_id = :roomid AND start >= :s AND end <= :e",
+      { :roomid => params[:roomid].to_i, :s => Time.now.beginning_of_day,
+      :e => Time.now.end_of_day } ).all
+
+    rec = [ "no", "weekly", "bi-weekly", "monthly" ]
+
+    schedule = init_schedule( 7, 19 )
+
+    @book.each do |b|
+
+      slots = (b.end.hour - b.start.hour) * 2
+      index = b.start.hour.to_f
+
+      if b.start.min == 30
+        slots -= 1
+        index = b.start.hour.to_f + 0.5
+      end
+
+      if b.start.min == 30
+        slots += 1
+      end
+
+      schedule[index][:title]     = b.title
+      schedule[index][:organizer] = b.user_id
+      schedule[index][:recurring] = rec[b.recurring]
+      schedule[index][:open]      = false
+
+      for i in 0 ... slots
+        schedule[index+i.to_f*0.5][:open] = false
+      end
+
+    end
+
+    return schedule 
+
+  end
+
+  def x_to_f(x)
+
+    if x
+
+      t = Time.parse(x)
+
+      result = t.hour.to_f
+
+      if t.min == 30
+        result += 0.5
+      end
+
+    else
+      result = 0.0
+    end
+
+    return result
+
+  end
+
+  def get_duration( s, e )
+
+    return x_to_f(e) - x_to_f(s)
+
+  end
+
 end
 
 get "/" do
@@ -200,10 +294,13 @@ get "/rooms/?.?:roomid?" do
     haml :roomsall, :locals => { :rooms => @rooms }
   else
     @room = Room.where( 'id' => params[:roomid].to_i ).first
+
+    @book = get_schedule(params[:roomid])
+ 
     if @room.nil?
       haml :error, :locals => { :msg => "Room Does Not Exist" }
     else
-      haml :rooms, :locals => { :room => @room }
+      haml :rooms, :locals => { :room => @room, :book => @book }
     end
   end
 
@@ -213,7 +310,9 @@ get "/reservations/?.?:roomid?" do
 
   @rooms = Room.all
     
-  haml :reservations, :locals => { :rooms => @rooms, :id => params[:roomid] }
+  haml :reservations, :locals => { :rooms => @rooms,
+    :id => params[:roomid], :s => x_to_f(params[:start]),
+    :d => get_duration( params[:start], params[:end] ) }
 
 end
 
@@ -259,7 +358,7 @@ post "/rest/reservations" do
   enddate = params[:end]
   puts enddate
 
-  if params[:recurring].to_i != 1 and params[:recurring].to_i != 16
+  if params[:recurring].to_i != 0 and params[:recurring].to_i != 4
     enddate = params[:start]
   end
 
@@ -267,7 +366,7 @@ post "/rest/reservations" do
   e = get_end( s, params[:duration] )
   puts "#{s} - #{e}"
 
-  if params[:recurring].to_i == 16
+  if params[:recurring].to_i == 4 
     meetings = get_multi_day( params[:roomid], s, params[:end] )
   else
     meetings = get_recurring( params[:roomid], params[:recurring], s, e )
