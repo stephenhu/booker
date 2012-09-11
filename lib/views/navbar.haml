@@ -8,15 +8,21 @@
       %a.brand{:href => '/'}
         booker 
         %sup alpha
-      .nav-collapse
+      .nav-collapse.collapse
         %ul.nav
           %li.active#floors
-            %a{:href => '/floors'} floors
+            %a{:href => "/floors"} floors
           %li#rooms
-            %a{:href => '/rooms'} rooms
+            %a{:href => "/rooms"} rooms
           %li#reservations
-            %a{:href => '/reservations'} reservations
-          %li#statistics
-            %a{:href => '/statistics'} statistics 
+            %a{:href => "/reservations"} reservations
           %li#about
-            %a{:href => '/about'} about
+            %a{:href => "/about"} about
+        %p.navbar-text.pull-right
+          - if @logged
+            %a{:href => "/users"}
+              = @user.canonical
+            %a{:href => "/logout"} log out
+          - else
+            %a{:href => "/login"} login
+

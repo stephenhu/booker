@@ -15,6 +15,7 @@
           %dd.lead
             = room.description
           %dd
+            %h4= Date.today
             %table.table.table-bordered.table-striped.table-condensed
               %th organizer
               %th title
@@ -23,16 +24,24 @@
               %th recurring
               %th action 
               - book.each do |k,v|
-                %tr
-                  %td= v[:organizer]
-                  %td= v[:title]
-                  %td= v[:start]
-                  %td= v[:end]
-                  %td= v[:recurring]
-                  %td
-                    - if v[:open]
+                - if v[:open]
+                  %tr.info
+                    %td= v[:organizer]
+                    %td= v[:title]
+                    %td= v[:start]
+                    %td= v[:end]
+                    %td= v[:recurring]
+                    %td
                       %button.btn.btn-info.btn-mini{:onclick => "redirect( 'reservations', '', 'roomid=#{room.id}&start=#{v[:start]}&end=#{v[:end]}' ); return false;" }
                         book
+                - else
+                  %tr.error
+                    %td= v[:organizer]
+                    %td= v[:title]
+                    %td= v[:start]
+                    %td= v[:end]
+                    %td= v[:recurring]
+                    %td
           %dd
             %button.btn.btn-primary.btn-mini
               = "like (0)"

@@ -1,0 +1,8 @@
+.container-fluid
+  .row-fluid
+    .span12
+      %h2 login
+      %input{ :type => "text", :placeholder => "email", :id => "email" }
+      %br
+      %button.btn.btn-success.btn-xxlarge{ :onclick => "authenticate(); return false;" } login
+      %hr

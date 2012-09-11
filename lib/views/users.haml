@@ -3,5 +3,26 @@
     .span12
       %h2
         = user.canonical
-      - user.reservations.each do |reservation|
-        %p= reservation.summary
+      %h3 reservations
+      %table.table.table-striped
+        %th title
+        %th start
+        %th end
+        %th room
+        %th recurring
+        %th
+        %th
+        - r = [ "none", "weekly", "bi-weekly", "monthly", "multi-day" ]
+        - user.reservations.each do |reservation|
+          - if reservation.start >= Date.today and reservation.start <= Date.today.end_of_week
+            %tr
+              %td= reservation.title
+              %td= reservation.start.ctime
+              %td= reservation.end.ctime
+              %td= reservation.room_id
+              %td= r[reservation.recurring]
+              %td
+                %button.btn.btn-primary.btn-mini modify
+              %td
+                %button.btn.btn-danger.btn-mini cancel
+      %hr

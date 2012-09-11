@@ -26,22 +26,6 @@ helpers do
     User.create(:email => email)
   end
 
-  def check_token
-
-    token = request.cookies["booker"]
-
-    user = extract_user(token)
-
-    if user.nil?
-      @logged = false
-    else
-      @logged = true
-    end
-
-    return user
-
-  end
-
   def authenticate(email)
 
     u = User.find_by_email(email)
@@ -65,12 +49,9 @@ helpers do
     #decipher.decrypt
 
     #email = decipher.update(Base64.decode64(token)) + decipher.final
-    if token.nil?
-      return nil
-    else
-      return User.find_by_email(Base64.decode64(token))
-    end
- 
+
+    return User.find_by_email(Base64.decode64(token))
+   
   end
 
   def get_start( d, start )
@@ -284,30 +265,13 @@ end
 
 get "/" do
 
-  @user = check_token
+  @rooms = Room.all
 
-  if @user.nil?
-    haml :floor10
-  else
-    case @user.team_id
-    when 2
-      haml :floor10
-    when 3
-      haml :floor10
-    when 1
-      haml :floor10
-    when 5
-      haml :floor11
-    else
-      haml :floor10
-    end
-  end
+  haml :index, :locals => { :rooms => @rooms }
  
 end
 
 get "/floors/?.?:floorid?" do
-
-  @user = check_token
 
   case params[:floorid]
   when nil
@@ -323,8 +287,6 @@ get "/floors/?.?:floorid?" do
 end
 
 get "/rooms/?.?:roomid?" do
-
-  @user = check_token
 
   case params[:roomid]
   when nil
@@ -345,8 +307,6 @@ get "/rooms/?.?:roomid?" do
 end
 
 get "/reservations/?.?:roomid?" do
-
-  @user = check_token
 
   @rooms = Room.all
     
@@ -377,39 +337,22 @@ get "/users/?.?:id?" do
 
   else
 
-    @user = check_token
+    token = request.cookies["booker"]
 
-    if @user.nil?
-      haml :login 
+    if token
+      user = extract_user(token)
+      haml :users, :locals => { :user => user }
     else
-      haml :users, :locals => { :user => @user }
+      # redirect to login page
     end
 
   end
 
 end
 
-get "/login" do
-
-  user = check_token()
-
-  if user.nil?
-    haml :login
-  else
-    haml :users
-  end
-
-end
-
-get "/logout" do
-  response.delete_cookie("booker")
-  redirect "/"
-end
-
 get "/about" do
 
-  @user = check_token
-  haml :about, :locals => { :user => @user }
+  haml :about
 
 end
 
@@ -462,14 +405,6 @@ post "/rest/reservations" do
     return Yajl::Encoder.encode("0, success")
 
   end
-
-end
-
-post "/rest/authenticate" do
-
-  token = authenticate(params[:email])
-  response.set_cookie( "booker", :value => token, :path => "/",
-    :expires => Time.now + (60*60*24*30) )
 
 end
 

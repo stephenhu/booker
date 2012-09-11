@@ -10,11 +10,14 @@
   .row-fluid
     .span12
       %h2 book meeting
-      %input.input-largei.hidden{ :type => "email", :id => "email", :placeholder => "email" }
-      %span.error.hidden{ :id => "email-error" } required
+      %input.input-large.hidden{ :type => "email", :id => "email", :placeholder => "email" }
       %br
       %input.input-xlarge{ :type => "text", :id => "title", :placeholder => "meeting title" }
       %span.error.hidden{ :id => "title-error" } required 
+      %br
+      %input.input-xxlarge{ :type => "text", :id => "invitees", :placeholder => "invitees (comma separated)" }
+      %span.error.hidden{ :id => "invitees-error" } required
+      %br
       %br
       %select.input-xxlarge{ :id => "uuid" }
         - rooms.each do |room|
