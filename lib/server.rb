@@ -1,26 +1,112 @@
 require "base64"
+require "digest/md5"
 require "haml"
+require "logger"
 require "mysql"
+require "action_mailer"
 require "active_record"
 require "active_support/core_ext/time/calculations"
 require "openssl"
+require "ri_cal"
 require "sinatra"
 require "sinatra/cookies"
 require "yajl"
 
 enable :logging
 
+# logging
+logger = Logger.new("booker.log")
+
 Dir.glob("./models/*").each { |r| require r }
 
 config =
   YAML.load_file('/home/hu/projects/booker/config/database.yml')['development']
 
+ActiveRecord::Base.logger = Logger.new("db.log")
 ActiveRecord::Base.establish_connection config
 
 key = "1234567890000qwertyasdflkjzxcvnabcde88888888888888888888888888888a"
 iv  = "blahblahblahpasswordpasswordsecret"
 
+
+configure do
+
+  set :root,     File.dirname(__FILE__)
+  set :views,    File.join( Sinatra::Application.root, "views" )
+  set :haml,     { :format => :html5 }
+
+  ActionMailer::Base.smtp_settings = {
+
+    :address => "smtp.vmware.com",
+    :port    => "25",
+    :domain  => "vmware.com"
+
+  }
+
+end
+
+class Invite < ActionMailer::Base
+
+  def generate_ics( reservation, invitees )
+
+    stamp = Time.now
+
+    cal = RiCal.Calendar do |cal|
+      cal.event do |event|
+        event.summary         = reservation.title
+        event.description     = reservation.details
+        event.dtstart         = reservation.start
+        event.dtend           = reservation.end
+        event.dtstamp         = stamp
+        event.last_modified   = stamp
+        event.organizer       = reservation.organizer_email
+        event.location        = reservation.room_name
+
+        invitees.each do |invitee|
+          event.add_attendee invitee
+        end
+        
+      end
+    end
+
+  end
+
+  def meeting_invite( reservation, recipients )
+
+    recipients.push reservation.organizer_email
+
+    puts "the recipients #{recipients}"
+
+    ics = generate_ics reservation, recipients
+
+    puts ics.to_s
+    @test = "big mac"
+    #attachments["meeting.ics"] = { :content => ics.to_s,
+    #  :mime_type => "text/calendar", :charset => "utf-8" }
+
+    mail( :to => recipients, :subject => reservation.title,
+      :template_name => "content",
+      :from => reservation.organizer_email )
+    
+  end
+
+end
+
 helpers do
+
+  def cancel_meeting( id, recurring )
+
+    r = Reservation.find(id)
+
+    if !r.nil?
+      if recurring
+        Reservation.delete_all(r.seriesid)
+      else
+        Reservation.delete(id)
+      end
+    end
+
+  end
 
   def register(email)
     User.create(:email => email)
@@ -112,32 +198,32 @@ helpers do
       meetings.push hash                                                          
     when 1                                                                        
 # calculate 3 months of weekly                                              
-      s2 = s                                                                      
-      e2 = e                                                                      
+      s1 = s                                                                      
+      e1 = e                                                                      
       12.times do |i|                                                             
-        hash = { :roomid => roomid, :start => s2, :end => e2 }           
-        s2 = s2 + 7 * 60 * 60 * 24                                                
-        e2 = e2 + 7 * 60 * 60 * 24                                                
+        hash = { :roomid => roomid, :start => s1, :end => e1 }           
+        s1 = s1 + 7 * 60 * 60 * 24                                                
+        e1 = e1 + 7 * 60 * 60 * 24                                                
         meetings.push hash                                                        
       end                                                                         
     when 2                                                                        
-      s4 = s                                                                      
-      e4 = e                                                                      
+      s2 = s                                                                      
+      e2 = e                                                                      
 # calculate 3 months of bi-weekly                                           
       6.times do |i|                                                              
-        hash = { :roomid => roomid, :start => s4, :end => e4 }           
-        s4 = s4 + 14 * 60 * 60 * 24                                               
-        e4 = e4 + 14 * 60 * 60 * 24                                               
+        hash = { :roomid => roomid, :start => s2, :end => e2 }           
+        s2 = s2 + 14 * 60 * 60 * 24                                               
+        e2 = e2 + 14 * 60 * 60 * 24                                               
         meetings.push hash                                                        
       end                                                                         
     when 3                                                                        
 # calculate 3 months of monthly                                             
-      s8 = s                                                                      
-      e8 = e                                                                      
+      s3 = s                                                                      
+      e3 = e                                                                      
       3.times do |i|                                                              
-        hash = { :roomid => roomid, :start => s8, :end => e8 }           
-        s8 = s8 + 28 * 60 * 60 * 24                                               
-        e8 = e8 + 28 * 60 * 60 * 24                                               
+        hash = { :roomid => roomid, :start => s3, :end => e3 }           
+        s3 = s3 + 28 * 60 * 60 * 24                                               
+        e3 = e3 + 28 * 60 * 60 * 24                                               
         meetings.push hash                                                        
       end                                                                         
     end
@@ -160,7 +246,6 @@ helpers do
       puts "day = #{day} start = #{start_time} end = #{end_time} wday = #{end_date.wday}"
       if !end_date.saturday? and !end_date.sunday?
         hash = { :roomid => roomid, :start => start_time, :end => end_time }
-        puts hash
         meetings.push hash
       end
     end
@@ -169,19 +254,73 @@ helpers do
 
   end
  
-  def reserve( userid, title, details, recurring, meetings ) 
+  def reserve( userid, title, details, recurring, meetings, seriesid ) 
+
+    rids = Array.new
 
     meetings.each do |meeting|
 
-      Reservation.create( :user_id => userid,                                    
-                          :room_id => meeting[:roomid],                            
-                          :title => title,                               
-                          :details => details,                           
-                          :start => meeting[:start],                                            
-                          :end => meeting[:end],                                              
-                          :recurring => recurring )
+      r = Reservation.create( :user_id => userid,                                    
+                              :room_id => meeting[:roomid],                            
+                              :title => title,                               
+                              :details => details,                           
+                              :start => meeting[:start],                                            
+                              :end => meeting[:end],                                              
+                              :recurring => recurring,
+                              :seriesid => seriesid )
+
+      rids.push r.id
 
     end
+
+    return rids
+
+  end
+
+  def add_invitees( rids, invitees )
+
+    # find invitees, if not found then add user
+
+    uids       = Array.new
+    recipients = Array.new
+
+    emails = invitees.split ","
+
+    emails.each do |e|
+
+      e.strip!
+
+      user = User.find_by_email(e)
+
+      if user.nil?
+        logger.info "#{e} user not found"
+        if !e.index("emc.com").nil? or !e.index("mozy.com").nil? or
+          !e.index("rbcon.com").nil? or !e.index("vmware.com").nil?
+          u = User.create :email => e
+          uids.push u.id
+          recipients.push u.email
+        else
+          logger.error "invalid email domain"
+        end
+
+      else
+        logger.info "#{e} user found"
+        uids.push user.id
+        recipients.push user.email
+      end
+    end
+
+    rids.each do |rid|
+      uids.each do |uid|
+        Invitee.create :reservation_id => rid, :user_id => uid
+      end 
+    end  
+
+    r = Reservation.find rids[0]
+
+    logger.info "sending mail"
+    email = Invite.meeting_invite r, recipients
+    #email.deliver
 
   end
 
@@ -191,14 +330,16 @@ helpers do
 
     for i in hour_start ... hour_end
 
-      top = { :organizer => "",
+      top = {
+        :organizer => "",
         :title => "",
         :start => "#{i}:00",
         :end   => "#{i}:30",
         :recurring => "",
         :open => true }
 
-      bottom = { :organizer => "",
+      bottom = {
+        :organizer => "",
         :title => "",
         :start => "#{i}:30",
         :end   => "#{i+1}:00",
@@ -286,21 +427,10 @@ get "/" do
 
   @user = check_token
 
-  if @user.nil?
+  if @user.nil? or @user.team_id != 5
     haml :floor10
   else
-    case @user.team_id
-    when 2
-      haml :floor10
-    when 3
-      haml :floor10
-    when 1
-      haml :floor10
-    when 5
-      haml :floor11
-    else
-      haml :floor10
-    end
+    haml :floor11
   end
  
 end
@@ -391,9 +521,9 @@ end
 
 get "/login" do
 
-  user = check_token()
+  @user = check_token()
 
-  if user.nil?
+  if @user.nil?
     haml :login
   else
     haml :users
@@ -409,13 +539,14 @@ end
 get "/about" do
 
   @user = check_token
-  haml :about, :locals => { :user => @user }
+  haml :about
 
 end
 
 post "/rest/reservations" do
 
   logger.info "reservation request received"
+
   if params[:email].empty?
     token = request.cookies["booker"]
   else
@@ -431,7 +562,6 @@ post "/rest/reservations" do
   user = extract_user(token)
 
   enddate = params[:end]
-  puts enddate
 
   if params[:recurring].to_i != 0 and params[:recurring].to_i != 4
     enddate = params[:start]
@@ -439,7 +569,7 @@ post "/rest/reservations" do
 
   s = get_start( params[:start], params[:time] )
   e = get_end( s, params[:duration] )
-  puts "#{s} - #{e}"
+  logger.info "#{s} - #{e}"
 
   if params[:recurring].to_i == 4 
     meetings = get_multi_day( params[:roomid], s, params[:end] )
@@ -451,8 +581,27 @@ post "/rest/reservations" do
     return Yajl::Encoder.encode("6000, room conflict")
   else
 
-    result = reserve( user.id, params[:title], params[:details],
-      params[:recurring], meetings )
+    if params[:recurring].to_i == 1 or params[:recurring].to_i == 2 or
+      params[:recurring].to_i == 3
+      puts user.to_s
+      puts meetings.to_s
+      seriesid = Digest::MD5.hexdigest(user.to_s + meetings.to_s)[0,10].downcase
+    else
+      seriesid = ""
+    end
+
+    puts "this is the seriesid: #{seriesid}"
+
+    # begin transaction
+    
+    Reservation.transaction do
+
+      result = reserve( user.id, params[:title], params[:details],
+        params[:recurring], meetings, seriesid )
+
+      add_invitees result, params[:invitees]
+
+    end
 
     #if result == 0
     #  return Yajl::Encoder.encode("0, success")
@@ -472,4 +621,22 @@ post "/rest/authenticate" do
     :expires => Time.now + (60*60*24*30) )
 
 end
+
+delete "/rest/reservations/:reserveid" do
+
+  if params[:recurring].nil?
+    logger.error "logic error delete reservation"
+  else
+    puts params[:recurring]
+
+    if params[:recurring] == "1"
+      cancel_meeting( params[:reserveid], true )
+    else
+      cancel_meeting( params[:reserveid], false )
+    end
+
+  end
+
+end
+
 

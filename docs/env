@@ -4,4 +4,5 @@
 - rbenv-build
 - libz-devel
 - ruby 1.9.2-p320
+- openssl, openssl-devel, readline, readline-devel, libxml2, libxslt
 

@@ -1,3 +1,21 @@
+:javascript
+  $(function() {
+
+    set_menu(null);
+    init_cancel_dialog();
+
+  });
+
+%div{ :id => "cancel-dialog", :title => "Cancel Reservation" }
+  %input{ :type => "hidden", :id => "recurringid", :value => "0" }
+  %br
+  %button.btn.btn-primary{ :onclick => "cancel_meeting(0); return false;" } Only this instance
+  %span All other events in the series will remain.
+  %br
+  %br
+  %button.btn.btn-primary{ :onclick => "cancel_meeting(1); return false;" } Remove all events in the series
+  %span All events in the series will be cancelled.
+
 .container-fluid
   .row-fluid
     .span12
@@ -10,7 +28,7 @@
         %th end
         %th room
         %th recurring
-        %th
+        %th invitees
         %th
         - r = [ "none", "weekly", "bi-weekly", "monthly", "multi-day" ]
         - user.reservations.each do |reservation|
@@ -19,10 +37,17 @@
               %td= reservation.title
               %td= reservation.start.ctime
               %td= reservation.end.ctime
-              %td= reservation.room_id
-              %td= r[reservation.recurring]
               %td
-                %button.btn.btn-primary.btn-mini modify
+                %a{ :href => "/rooms/#{reservation.room_id}" }
+                  = reservation.room_name
+              %td= reservation.recurring_name
               %td
-                %button.btn.btn-danger.btn-mini cancel
+                - reservation.invitees.each do |i|
+                  = "#{i.email}"
+              %td
+                %a{ :href => "" }
+                  %img{ :src => url("images/glyphicons_019_cogwheel.png") }
+                %a{ :href => "", :id => "cancel-reservation", :onclick => "open_cancel_dialog(#{reservation.id}); return false;" }
+                  %img{ :src => url("images/glyphicons_207_remove_2.png") }
       %hr
+

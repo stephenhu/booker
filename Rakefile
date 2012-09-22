@@ -8,12 +8,14 @@ require "yaml"
 
 task :default => :help
 
+env = ENV['RACK_ENV'] || "development"
+
 namespace :db do
 
   desc "establish connection"
   task :environment do
 
-    @config = YAML.load_file('config/database.yml')['development']
+    @config = YAML.load_file("config/database.yml")["#{env}"]
     ActiveRecord::Base.establish_connection @config 
     ActiveRecord::Base.logger = Logger.new(STDOUT)
 
@@ -21,7 +23,8 @@ namespace :db do
 
   desc "create database"
   task :create => :environment do
-    puts "this is an empty call, use migrate." 
+    ActiveRecord::Base.connection.create_database @config
+    ActiveRecord::Base.establish_connection @config
   end
 
   desc "migrate database"
@@ -46,8 +49,9 @@ desc "generate help text"
 task :help do
 
   puts "rake"
-  puts "\tmigrate"
-  puts "\tseed"
+  puts "  db:create"
+  puts "  db:migrate"
+  puts "  db:seed"
 
 end
 

@@ -10,8 +10,12 @@
           %h2= room.descriptive_name
           %dd
             -room.tags.each do |tag|
-              %button.btn.btn-success.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}', '' ); return false;"}
-                = tag.tag
+              - if tag.tag == "admin"
+                %button.btn.btn-warning.btn-mini{ :onclick => "redirect( 'tags', '#{tag.tag}', '' ); return false;" }
+                  = tag.tag
+              - else
+                %button.btn.btn-success.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}', '' ); return false;"}
+                  = tag.tag
           %dd.lead
             = room.description
           %dd
@@ -25,7 +29,7 @@
               %th action 
               - book.each do |k,v|
                 - if v[:open]
-                  %tr.info
+                  %tr.success
                     %td= v[:organizer]
                     %td= v[:title]
                     %td= v[:start]
@@ -35,7 +39,7 @@
                       %button.btn.btn-info.btn-mini{:onclick => "redirect( 'reservations', '', 'roomid=#{room.id}&start=#{v[:start]}&end=#{v[:end]}' ); return false;" }
                         book
                 - else
-                  %tr.error
+                  %tr.info
                     %td= v[:organizer]
                     %td= v[:title]
                     %td= v[:start]

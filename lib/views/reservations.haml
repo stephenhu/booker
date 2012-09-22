@@ -11,12 +11,15 @@
     .span12
       %h2 book meeting
       %input.input-large.hidden{ :type => "email", :id => "email", :placeholder => "email" }
+      %span.error.hidden{ :id => "email-error" } required
       %br
       %input.input-xlarge{ :type => "text", :id => "title", :placeholder => "meeting title" }
       %span.error.hidden{ :id => "title-error" } required 
       %br
       %input.input-xxlarge{ :type => "text", :id => "invitees", :placeholder => "invitees (comma separated)" }
       %span.error.hidden{ :id => "invitees-error" } required
+      %span.error.hidden{ :id => "invalid-email-error" } invalid email address or addresses
+      %span.error.hidden{ :id => "invalid-email-domain-error" } must be from emc, mozy, rbcon, or vmware domain
       %br
       %br
       %select.input-xxlarge{ :id => "uuid" }

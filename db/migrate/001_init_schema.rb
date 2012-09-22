@@ -51,13 +51,21 @@ class InitSchema < ActiveRecord::Migration
       t.datetime :start
       t.datetime :end
       t.integer :recurring, :default => 0
+      t.string :seriesid
       t.timestamps
     end
       
+    create_table :invitees do |t|
+      t.belongs_to :reservation
+      t.integer :user_id
+      t.integer :reservation_id
+    end
 
   end
 
   def self.down
+
+    drop_table :teams
 
     drop_table :users
 
@@ -68,6 +76,8 @@ class InitSchema < ActiveRecord::Migration
     drop_table :roomtags
 
     drop_table :reservations
+
+    drop_table :invitees
 
   end
 
