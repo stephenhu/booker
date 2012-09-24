@@ -32,7 +32,7 @@
         %th
         - r = [ "none", "weekly", "bi-weekly", "monthly", "multi-day" ]
         - user.reservations.each do |reservation|
-          - if reservation.start >= Date.today and reservation.start <= Date.today.end_of_week
+          - if reservation.start.to_date >= Date.today and reservation.start.to_date <= Date.today.end_of_week
             %tr
               %td= reservation.title
               %td= reservation.start.ctime
@@ -45,7 +45,7 @@
                 - reservation.invitees.each do |i|
                   = "#{i.email}"
               %td
-                %a{ :href => "" }
+                %a{ :href => "", :onclick => "redirect( 'reservations', #{reservation.id}, 'update=true' ); return false;" }
                   %img{ :src => url("images/glyphicons_019_cogwheel.png") }
                 %a{ :href => "", :id => "cancel-reservation", :onclick => "open_cancel_dialog(#{reservation.id}); return false;" }
                   %img{ :src => url("images/glyphicons_207_remove_2.png") }

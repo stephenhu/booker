@@ -35,5 +35,24 @@ class Reservation < ActiveRecord::Base
 
   end
 
+  def invitees_delimited
+
+    delimited = ""
+
+    self.invitees.each_with_index do |i, index|
+
+      if index == 0
+        delimited = i.email
+      else
+        delimited += ", "
+        delimited += i.email
+      end
+
+    end
+
+    return delimited
+
+  end
+
 end
 

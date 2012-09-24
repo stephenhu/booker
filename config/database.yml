@@ -10,4 +10,6 @@ production:
   database: booker
   username: root
   password: steve
+  socket: /var/lib/mysql/mysql.sock
+  pool: 50
 

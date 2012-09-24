@@ -21,13 +21,14 @@
             %td
               -room.tags.each do |tag|
                 - if tag.tag == "admin"
-                  %button.btn.btn-warning.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}' ); return false;"}
+                  %button.btn.btn-warning.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}', null ); return false;"}
+
                     = tag.tag
                 - else
-                  %button.btn.btn-success.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}' ); return false;"}
+                  %button.btn.btn-success.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}', null ); return false;"}
                     = tag.tag
             %td
               = room.capacity
             %td
-              %button.btn.btn-info.btn-mini{ :onclick => "redirect( 'reservations', '#{room.id}' ); return false" } book 
+              %button.btn.btn-info.btn-mini{ :onclick => "redirect( 'reservations', null, 'roomid=#{room.id}' ); return false" } book 
 

@@ -1,11 +1,11 @@
+require "action_mailer"
+require "active_record"
+require "active_support/core_ext/time/calculations"
 require "base64"
 require "digest/md5"
 require "haml"
 require "logger"
 require "mysql"
-require "action_mailer"
-require "active_record"
-require "active_support/core_ext/time/calculations"
 require "openssl"
 require "ri_cal"
 require "sinatra"
@@ -19,8 +19,12 @@ logger = Logger.new("booker.log")
 
 Dir.glob("./models/*").each { |r| require r }
 
+env = ENV["RACK_ENV"] || "development"
+
+puts env
+
 config =
-  YAML.load_file('/home/hu/projects/booker/config/database.yml')['development']
+  YAML.load_file('/home/hu/projects/booker/config/database.yml')[env]
 
 ActiveRecord::Base.logger = Logger.new("db.log")
 ActiveRecord::Base.establish_connection config
@@ -100,7 +104,7 @@ helpers do
 
     if !r.nil?
       if recurring
-        Reservation.delete_all(r.seriesid)
+        Reservation.destroy_all(:seriesid => r.seriesid)
       else
         Reservation.delete(id)
       end
@@ -474,15 +478,33 @@ get "/rooms/?.?:roomid?" do
 
 end
 
-get "/reservations/?.?:roomid?" do
+get "/reservations/?.?:reserveid?" do
 
   @user = check_token
 
   @rooms = Room.all
-    
-  haml :reservations, :locals => { :rooms => @rooms,
-    :id => params[:roomid], :s => x_to_f(params[:start]),
-    :d => get_duration( params[:start], params[:end] ) }
+
+  if params[:update].nil?
+
+    haml :reservations, :locals => { :rooms => @rooms,
+      :id => params[:roomid], :s => x_to_f(params[:start]),
+      :d => get_duration( params[:start], params[:end] ),
+      :recurring => nil, :update => false }
+
+  else
+
+    r = Reservation.find(params[:reserveid])
+
+    haml :reservations, :locals => { :rooms => @rooms,
+      :id => r.room_id, :s => x_to_f(r.start.strftime("%R")),
+      :d => get_duration( r.start.strftime("%R"), r.end.strftime("%R") ),
+      :title => r.title, :details => r.details, :recurring => r.recurring,
+      :sdate => r.start.strftime("%m/%d/%Y"),
+      :edate => r.end.strftime("%m/%d/%Y"),
+      :invitees => r.invitees_delimited, :update => true }
+
+
+  end
 
 end
 
@@ -639,4 +661,8 @@ delete "/rest/reservations/:reserveid" do
 
 end
 
+put "/rest/reservations/:reserveid" do
+
+  
+end
 

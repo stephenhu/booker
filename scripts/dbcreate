@@ -1,0 +1,5 @@
+mysql -u root -psteve -e 'drop database if exists booker;'
+mysql -u root -psteve -e 'create database booker default character set utf8;'
+mysql -u root -psteve -e "grant all privileges on booker.* to 'booker'@'localhost';"
+mysql -u root -psteve -e "set password for 'booker'@'localhost' = PASSWORD('password');"
+

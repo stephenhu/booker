@@ -6,12 +6,11 @@ closed:
 - meeting conflict logic
 - color coded listing
 - users view highlights floors menu item
+- user reservations
 
 open:
 - email, sendgrid
 - ics generation
-- modify calendar
-- user reservations
 - validation of recurring logic
 - search
 - admin only rooms, acl
@@ -30,5 +29,11 @@ open:
 - cancel multi-day invite
 - jquery 1.8.2
 - cascaded deletes for invitees
+- access control for users, for viewing things like reservations
+- empty invitee list, use case is creating a placeholder event
+- redundant email removal
+- use mysql instead of sqlite3
+- modify non-recurring to recurring logic
+- cancel meeting refresh page.
 - 
  

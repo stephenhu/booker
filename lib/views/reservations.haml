@@ -5,6 +5,7 @@
     check_token();
     set_menu("reservations");
     set_duration("#{d}");
+    set_recurring(#{recurring});
   });
 .container-fluid
   .row-fluid
@@ -13,10 +14,16 @@
       %input.input-large.hidden{ :type => "email", :id => "email", :placeholder => "email" }
       %span.error.hidden{ :id => "email-error" } required
       %br
-      %input.input-xlarge{ :type => "text", :id => "title", :placeholder => "meeting title" }
+      - if !update
+        %input.input-xlarge{ :type => "text", :id => "title", :placeholder => "meeting title" }
+      - else
+        %input.input-xlarge{ :type => "text", :id => "title", :placeholder => "meeting title", :value => "#{title}" }
       %span.error.hidden{ :id => "title-error" } required 
       %br
-      %input.input-xxlarge{ :type => "text", :id => "invitees", :placeholder => "invitees (comma separated)" }
+      - if !update
+        %input.input-xxlarge{ :type => "text", :id => "invitees", :placeholder => "invitees (comma separated)" }
+      - else
+        %input.input-xxlarge{ :type => "text", :id => "invitees", :placeholder => "invitees (comma separated)", :value => "#{invitees}" }
       %span.error.hidden{ :id => "invitees-error" } required
       %span.error.hidden{ :id => "invalid-email-error" } invalid email address or addresses
       %span.error.hidden{ :id => "invalid-email-domain-error" } must be from emc, mozy, rbcon, or vmware domain
@@ -31,8 +38,12 @@
             %option{ :value => "#{room.uuid}" }
               = room.full_name
       %form.form-inline
-        %input#datepicker1{ :type => "text", :placeholder => "start date", :value => "#{Date.today.strftime( "%m/%d/%Y" )}" }
-        %input#datepicker2{ :type => "text", :placeholder => "end date", :value => "#{Date.today.strftime( "%m/%d/%Y" )}", :disabled => "disabled" }
+        - if !update
+          %input#datepicker1{ :type => "text", :placeholder => "start date", :value => "#{Date.today.strftime( "%m/%d/%Y" )}" }
+          %input#datepicker2{ :type => "text", :placeholder => "end date", :value => "#{Date.today.strftime(     "%m/%d/%Y" )}", :disabled => "disabled" }
+        - else
+          %input#datepicker1{ :type => "text", :placeholder => "start date", :value => "#{sdate}" }
+          %input#datepicker2{ :type => "text", :placeholder => "end date", :value => "#{edate}", :disabled => "disabled" }
       %form.form-inline
         %select{ :id => "start" }
           - 12.times do |i|
@@ -60,23 +71,30 @@
         %span.error.hidden{ :id => "duration-error" } required
       %form.form-inline
         %label.radio
-          %input#recur1{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "0", :checked => "checked" }
+          %input#recur0{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "0", :checked => "checked" }
             non-recurring
         %label.radio                                                            
-          %input#recur2{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "1" }
+          %input#recur1{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "1" }
             weekly
         %label.radio                                                            
-          %input#recur3{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "2" }
+          %input#recur2{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "2" }
             bi-weekly
         %label.radio
-          %input#recur4{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "3" }
+          %input#recur3{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "3" }
             monthly
         %label.radio
-          %input#recur5{ :type => "radio", :onclick => "multi_day();", :name => "recurring", :value => "4" }
+          %input#recur4{ :type => "radio", :onclick => "multi_day();", :name => "recurring", :value => "4" }
             multi-day
-      %textarea.field.span8{ :rows => 10, :id => "details", :placeholder => "meeting details" } 
+      - if !update
+        %textarea.field.span8{ :rows => 10, :id => "details", :placeholder => "meeting details" }
+      - else
+        %textarea.field.span8{ :rows => 10, :id => "details", :placeholder => "meeting details" }
+          = details
       %span.error.hidden{ :id => "details-error" } required 
       %br
-      %button.btn.btn-primary.btn-large{ :onclick => "reserve(); return false;" } reserve
+      - if !update
+        %button.btn.btn-primary.btn-large{ :onclick => "reserve(); return false;" } reserve
+      - else
+        %button.btn.btn-primary.btn-large{ :onclick => "update_reservation(); return false;" } update meeting
       %hr
 
