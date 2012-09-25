@@ -21,8 +21,6 @@ Dir.glob("./models/*").each { |r| require r }
 
 env = ENV["RACK_ENV"] || "development"
 
-puts env
-
 config =
   YAML.load_file('/home/hu/projects/booker/config/database.yml')[env]
 
@@ -171,7 +169,7 @@ helpers do
     return start + duration.to_f * 3600
   end
 
-  def check_conflict(meetings)
+  def check_conflict( meetings, reserveids )
 
     meetings.each do |meeting|
 
@@ -182,9 +180,12 @@ helpers do
         :end => meeting[:end] } )
 
       if r.length > 0
-        return true 
-      end
 
+        if !reserveids.nil? and !reserveids.include? r
+          return true
+        end
+
+      end
 
     end
 
@@ -489,7 +490,7 @@ get "/reservations/?.?:reserveid?" do
     haml :reservations, :locals => { :rooms => @rooms,
       :id => params[:roomid], :s => x_to_f(params[:start]),
       :d => get_duration( params[:start], params[:end] ),
-      :recurring => nil, :update => false }
+      :recurring => nil, :update => false, :reserveid => params[:reserveid] }
 
   else
 
@@ -501,8 +502,8 @@ get "/reservations/?.?:reserveid?" do
       :title => r.title, :details => r.details, :recurring => r.recurring,
       :sdate => r.start.strftime("%m/%d/%Y"),
       :edate => r.end.strftime("%m/%d/%Y"),
-      :invitees => r.invitees_delimited, :update => true }
-
+      :invitees => r.invitees_delimited, :update => true,
+      :reserveid => params[:reserveid] }
 
   end
 
@@ -583,9 +584,11 @@ post "/rest/reservations" do
   
   user = extract_user(token)
 
+  recur = params[:recurring].to_i
+
   enddate = params[:end]
 
-  if params[:recurring].to_i != 0 and params[:recurring].to_i != 4
+  if recur != 0 and recur != 4
     enddate = params[:start]
   end
 
@@ -593,20 +596,17 @@ post "/rest/reservations" do
   e = get_end( s, params[:duration] )
   logger.info "#{s} - #{e}"
 
-  if params[:recurring].to_i == 4 
+  if recur == 4 
     meetings = get_multi_day( params[:roomid], s, params[:end] )
   else
     meetings = get_recurring( params[:roomid], params[:recurring], s, e )
   end
 
-  if check_conflict(meetings)
+  if check_conflict( meetings, nil )
     return Yajl::Encoder.encode("6000, room conflict")
   else
 
-    if params[:recurring].to_i == 1 or params[:recurring].to_i == 2 or
-      params[:recurring].to_i == 3
-      puts user.to_s
-      puts meetings.to_s
+    if recur == 1 or recur == 2 or recur == 3
       seriesid = Digest::MD5.hexdigest(user.to_s + meetings.to_s)[0,10].downcase
     else
       seriesid = ""
@@ -646,6 +646,8 @@ end
 
 delete "/rest/reservations/:reserveid" do
 
+  user = check_token
+
   if params[:recurring].nil?
     logger.error "logic error delete reservation"
   else
@@ -663,6 +665,42 @@ end
 
 put "/rest/reservations/:reserveid" do
 
-  
+  user = check_token
+
+  s = get_start( params[:start], params[:time] )
+  e = get_end( s, params[:duration] )
+
+  meetings = get_recurring( params[:roomid], params[:recurring], s, e )
+  puts meetings
+  r = Reservation.find(params[:reserveid].to_i)
+
+  if r.seriesid == ""
+
+    rids = [ r.id ]
+
+  else
+
+    tmp = Reservation.find_by_seriesid(r.seriesid)
+
+    puts tmp
+
+  end
+
+  if check_conflict( meetings, rids )
+    return Yajl::Encoder.encode("6000, room conflict")
+  else
+
+    recur = params[:recurring].to_i
+
+    if recur == 1 or recur == 2 or recur == 3
+      seriesid = Digest::MD5.hexdigest(user.to_s + meetings.to_s)[0,10].downcase
+    else
+      seriesid = ""
+    end
+    puts "in here"
+    # modify previous
+
+  end
+ 
 end
 

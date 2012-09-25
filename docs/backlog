@@ -35,5 +35,8 @@ open:
 - use mysql instead of sqlite3
 - modify non-recurring to recurring logic
 - cancel meeting refresh page.
-- 
- 
+- script to load jquery, jquery plugins, and bootstrap
+- tags navbar
+- phone number
+- outline meeting rooms
+-   

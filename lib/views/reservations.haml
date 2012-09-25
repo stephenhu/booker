@@ -93,8 +93,8 @@
       %span.error.hidden{ :id => "details-error" } required 
       %br
       - if !update
-        %button.btn.btn-primary.btn-large{ :onclick => "reserve(); return false;" } reserve
+        %button.btn.btn-primary.btn-large{ :onclick => "reserve( null, false); return false;" } reserve
       - else
-        %button.btn.btn-primary.btn-large{ :onclick => "update_reservation(); return false;" } update meeting
+        %button.btn.btn-primary.btn-large{ :onclick => "reserve( #{reserveid}, true); return false;" } update meeting
       %hr
 
