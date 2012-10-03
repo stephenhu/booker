@@ -2,7 +2,7 @@ class Reservation < ActiveRecord::Base
 
   belongs_to :rooms
   belongs_to :users
-  has_many   :invitees, :dependent => :delete_all
+  has_many   :invitees, :dependent => :destroy
 
   def room_name
 

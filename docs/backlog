@@ -7,6 +7,8 @@ closed:
 - color coded listing
 - users view highlights floors menu item
 - user reservations
+- use mysql instead of sqlite3
+- user icon
 
 open:
 - email, sendgrid
@@ -32,11 +34,10 @@ open:
 - access control for users, for viewing things like reservations
 - empty invitee list, use case is creating a placeholder event
 - redundant email removal
-- use mysql instead of sqlite3
 - modify non-recurring to recurring logic
 - cancel meeting refresh page.
 - script to load jquery, jquery plugins, and bootstrap
 - tags navbar
 - phone number
 - outline meeting rooms
--   
+-    

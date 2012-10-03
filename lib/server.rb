@@ -104,7 +104,7 @@ helpers do
       if recurring
         Reservation.destroy_all(:seriesid => r.seriesid)
       else
-        Reservation.delete(id)
+        Reservation.destroy(id)
       end
     end
 
@@ -169,28 +169,72 @@ helpers do
     return start + duration.to_f * 3600
   end
 
-  def check_conflict( meetings, reserveids )
+  def check_conflict( meetings, reserveid )
+
+    if !reserveid.nil?
+      rsvps = get_reservations(reserveid)
+    end
 
     meetings.each do |meeting|
 
-      r = Reservation.where( 
-        "room_id = :roomid AND ((start <= :start AND end > :start)" +
-        " OR (start <= :end AND end > :end))",
-        { :roomid => meeting[:roomid], :start => meeting[:start],
-        :end => meeting[:end] } )
+      if rsvps.nil?
+
+        r = Reservation.where( 
+          "room_id = :roomid AND ((start <= :start AND end > :start)" +
+          " OR (start <= :end AND end > :end))",
+          { :roomid => meeting[:roomid], :start => meeting[:start],
+          :end => meeting[:end] } ).all
+
+      else
+
+        r = Reservation.where(                                                  
+          "room_id = :roomid AND ((start <= :start AND end > :start)" +         
+          " OR (start <= :end AND end > :end)) AND (id NOT IN (:rsvps))",          
+          { :roomid => meeting[:roomid], :start => meeting[:start],             
+          :end => meeting[:end], :rsvps => rsvps } ).all
+
+      end
 
       if r.length > 0
-
-        if !reserveids.nil? and !reserveids.include? r
-          return true
-        end
-
+        return true
       end
 
     end
 
     return false
 
+  end
+
+  def merge_meetings( meetings, reservations )
+    
+    if meetings.length == reservations.length
+
+      meetings.each_with_index do |meeting, i|
+
+        meeting[:id] = reservations[i].id
+
+      end
+
+    end
+
+    return meetings
+
+  end
+
+  def get_reservations(id)
+
+    r = Reservation.find(id)
+                                                        
+    if r.seriesid != ""
+                                     
+      result = Reservation.where(:seriesid => r.seriesid).order("start ASC")                         
+                                                                            
+      return result
+
+    else
+      return r
+    end
+                                                    
   end
 
   def get_recurring( roomid, frequency, s, e )
@@ -204,7 +248,7 @@ helpers do
     when 1                                                                        
 # calculate 3 months of weekly                                              
       s1 = s                                                                      
-      e1 = e                                                                      
+      e1 = e
       12.times do |i|                                                             
         hash = { :roomid => roomid, :start => s1, :end => e1 }           
         s1 = s1 + 7 * 60 * 60 * 24                                                
@@ -258,21 +302,119 @@ helpers do
     return meetings
 
   end
- 
-  def reserve( userid, title, details, recurring, meetings, seriesid ) 
 
-    rids = Array.new
+  def upgrade_reservations( reservations, meetings, new_recur, roomid, title,
+    details )
 
-    meetings.each do |meeting|
+    t = [ 12, 6, 3 ]
 
-      r = Reservation.create( :user_id => userid,                                    
-                              :room_id => meeting[:roomid],                            
-                              :title => title,                               
-                              :details => details,                           
-                              :start => meeting[:start],                                            
-                              :end => meeting[:end],                                              
-                              :recurring => recurring,
-                              :seriesid => seriesid )
+    old_recur = reservations[0].recurring
+    modulus   = t[new_recur-1] / t[old_recur-1] 
+    index     = 0
+
+    reservations.each_with_index do |r,i|
+
+      r.room_id     = roomid
+      r.title       = title
+      r.details     = details
+      r.recurring   = new_recur
+      r.start       = meetings[index][:start]
+      r.end         = meetings[index][:end]
+      r.save
+
+      index = index + modulus
+
+    end
+
+    uncreated = Array.new
+
+    meetings.each_with_index do |m,j|
+
+      if j % modulus != 0
+        uncreated.push m
+      end
+
+    end
+
+    reserve( reservations[0].user_id, title, details, new_recur, uncreated,
+      reservations[0].seriesid, reservations[0].id )
+
+  end
+
+  def downgrade_reservations( reservations, new_recur, roomid, title, details )
+
+    t = [ 12, 6, 3 ]
+
+    old_recur = reservations[0].recurring
+    modulus = t[old_recur-1] / t[new_recur-1]
+
+    reservations.each_with_index do |r,i|
+
+      if i % modulus != 0
+        r.destroy
+      else
+        r.room_id     = roomid
+        r.title       = title
+        r.details     = details
+        r.recurring   = new_recur
+        r.save
+      end
+
+    end
+
+  end
+
+  def modify_reservations( reserveid, roomid, title, details, recurring,
+    meetings, seriesid )
+
+    reservations = get_reservations(reserveid)
+
+    reservations.each_with_index do |r,i|
+      r.room_id   = roomid
+      r.title     = title
+      r.details   = details
+      r.start     = meetings[i][:start]
+      r.end       = meetings[i][:end]
+      r.recurring = recurring
+      r.seriesid  = seriesid
+      r.save
+    end
+
+  end
+
+  def reserve( userid, title, details, recurring, meetings, seriesid,
+    originid=0 ) 
+
+    rids     = Array.new
+    
+    meetings.each_with_index do |meeting,i|
+
+      if i == 0 and originid == 0
+
+        r = Reservation.create( :user_id => userid,                                    
+                                :room_id => meeting[:roomid],                            
+                                :title => title,                               
+                                :details => details,                           
+                                :start => meeting[:start],                                            
+                                :end => meeting[:end],                                              
+                                :recurring => recurring,
+                                :seriesid => seriesid )
+
+        originid = r.id
+
+      else
+
+        r = Reservation.create( :user_id => userid,
+                                :room_id => meeting[:roomid],
+                                :title => title,
+                                :details => details,
+                                :start => meeting[:start],
+                                :end => meeting[:end],
+                                :recurring => recurring,
+                                :seriesid => seriesid,
+                                :originid => originid )
+                  
+      end
 
       rids.push r.id
 
@@ -426,6 +568,25 @@ helpers do
 
   end
 
+  def remove_meetings(rids)
+
+    puts "rids legnth: #{rids.length}"
+    puts "rids first id: #{rids[0]}"
+
+    rids.each_with_index do |r,i|
+      puts i
+      if i != 0
+        puts "destory #{i}"
+        Reservation.destroy(r)
+        rids.delete_at(i)
+        puts rids
+      end
+
+    end
+    puts "after pop #{rids}"
+
+  end
+
 end
 
 get "/" do
@@ -503,7 +664,8 @@ get "/reservations/?.?:reserveid?" do
       :sdate => r.start.strftime("%m/%d/%Y"),
       :edate => r.end.strftime("%m/%d/%Y"),
       :invitees => r.invitees_delimited, :update => true,
-      :reserveid => params[:reserveid] }
+      :reserveid => params[:reserveid],
+      :user_id => @user.id }
 
   end
 
@@ -584,8 +746,8 @@ post "/rest/reservations" do
   
   user = extract_user(token)
 
-  recur = params[:recurring].to_i
-
+  roomid  = params[:roomid].to_i
+  recur   = params[:recurring].to_i
   enddate = params[:end]
 
   if recur != 0 and recur != 4
@@ -597,9 +759,9 @@ post "/rest/reservations" do
   logger.info "#{s} - #{e}"
 
   if recur == 4 
-    meetings = get_multi_day( params[:roomid], s, params[:end] )
+    meetings = get_multi_day( roomid, s, params[:end] )
   else
-    meetings = get_recurring( params[:roomid], params[:recurring], s, e )
+    meetings = get_recurring( roomid, recur, s, e )
   end
 
   if check_conflict( meetings, nil )
@@ -612,10 +774,8 @@ post "/rest/reservations" do
       seriesid = ""
     end
 
-    puts "this is the seriesid: #{seriesid}"
+    logger.info "this is the seriesid: #{seriesid}"
 
-    # begin transaction
-    
     Reservation.transaction do
 
       result = reserve( user.id, params[:title], params[:details],
@@ -625,11 +785,6 @@ post "/rest/reservations" do
 
     end
 
-    #if result == 0
-    #  return Yajl::Encoder.encode("0, success")
-    #else
-    #  return Yajl::Encoder.encode("5000, Internal Error")
-    #end
     return Yajl::Encoder.encode("0, success")
 
   end
@@ -667,40 +822,121 @@ put "/rest/reservations/:reserveid" do
 
   user = check_token
 
+  # case 1: if changed from recurring to none
+  # case 2: no change
+  # case 3: if changed from none to recurring
+
   s = get_start( params[:start], params[:time] )
   e = get_end( s, params[:duration] )
 
-  meetings = get_recurring( params[:roomid], params[:recurring], s, e )
-  puts meetings
-  r = Reservation.find(params[:reserveid].to_i)
+  reserveid = params[:reserveid].to_i
+  recur     = params[:recurring].to_i
+  roomid    = params[:roomid].to_i
+  title     = params[:title]
+  details   = params[:details]
 
-  if r.seriesid == ""
+  reservations = get_reservations(reserveid)
 
-    rids = [ r.id ]
+  puts "reservations: #{reservations.length}"
+  puts "recur: #{recur}"
+  puts "#{s} #{e}"
 
-  else
+  if recur == reservations[0].recurring
+    
+    if reservations[0].start == s and reservations[0].end = e
 
-    tmp = Reservation.find_by_seriesid(r.seriesid)
+      Reservation.transaction do
 
-    puts tmp
+        reservations.each do |r|
+          r.room_id = roomid
+          r.title   = title
+          r.details = details
+          if r.changed?
+            r.save
+          end
+        end
 
-  end
+      end
 
-  if check_conflict( meetings, rids )
-    return Yajl::Encoder.encode("6000, room conflict")
-  else
-
-    recur = params[:recurring].to_i
-
-    if recur == 1 or recur == 2 or recur == 3
-      seriesid = Digest::MD5.hexdigest(user.to_s + meetings.to_s)[0,10].downcase
     else
-      seriesid = ""
+
+      if recur == 4
+        meetings = get_multi_day( roomid, s, params[:end] )
+      else
+        meetings = get_recurring( roomid, recur, s, e )
+      end
+
+      if check_conflict( meetings, reserveid )
+        return Yajl::Encoder.encode("6000, room conflict")
+      else
+
+         Reservation.transaction do
+
+           modify_reservations( reserveid, roomid, title, details, recur,
+             meetings, reservations[0].seriesid )   
+
+         end
+
+      end
+
     end
-    puts "in here"
-    # modify previous
+
+  elsif recur > reservations[0].recurring
+
+    puts "#{reservations[0].start} #{reservations[0].end}"
+# downgrade, remove old instances
+
+      Reservation.transaction do
+
+        downgrade_reservations( reservations, recur, roomid, title, details )
+
+        if reservations[0].start != s or reservations[0].end != e
+
+          puts "time change"
+          if recur == 4
+            meetings = get_multi_day( roomid, s, params[:end] )
+          else
+            meetings = get_recurring( roomid, recur, s, e )
+          end
+
+          if check_conflict( meetings, reserveid )
+            return Yajl::Encoder.encode("6000, room conflict")
+          else
+
+            update_reservations( reserveid, roomid, title, details, recur,
+              meetings, reservations[0].seriesid )
+
+          end
+
+        end
+
+      end
+
+     
+  elsif recur < reservations[0].recurring
+
+    if recur == 4
+      meetings = get_multi_day( roomid, s, params[:end] )
+    else
+      meetings = get_recurring( roomid, recur, s, e )
+    end
+
+    if check_conflict( meetings, reserveid )
+      return Yajl::Encoder.encode("6000, room conflict")
+    else
+
+      Reservation.transaction do
+
+        upgrade_reservations( reservations, meetings, recur, roomid, title,
+          details )
+
+      end
+
+    end
 
   end
+
+  return Yajl::Encoder.encode("0, success")
  
 end
 

@@ -52,6 +52,7 @@ class InitSchema < ActiveRecord::Migration
       t.datetime :end
       t.integer :recurring, :default => 0
       t.string :seriesid
+      t.integer :originid
       t.timestamps
     end
       
