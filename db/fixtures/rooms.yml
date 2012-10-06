@@ -1,9 +1,11 @@
 room1:
   name: Crimson Tide
   chinese: 满江红
-  capacity: 5
+  capacity: 25 
   floor: 10
   uuid: 1
+  did: 021-61976410
+  extension: 6410
   adminonly: true
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -12,9 +14,11 @@ room1:
 room2:
   name: Sandy Brook
   chinese: 浣溪沙
-  capacity: 15
+  capacity: 25
   floor: 10
   uuid: 2
+  did: 021-61976416
+  extension: 6416
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -23,9 +27,11 @@ room2:
 room3:
   name: Fisherman Pride
   chinese: 渔家傲
-  capacity: 5
+  capacity: 25
   floor: 10
   uuid: 3
+  did: 021-61976415
+  extension: 6415
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -37,6 +43,8 @@ room4:
   capacity: 15
   floor: 10
   uuid: 4
+  did: 021-61976411
+  extension: 6411
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -48,6 +56,8 @@ room5:
   capacity: 5
   floor: 10
   uuid: 5
+  did: 021-61976413
+  extension: 6413
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -59,6 +69,8 @@ room6:
   capacity: 8
   floor: 10
   uuid: 6
+  did: 021-61976418
+  extension: 6418
   adminonly: true
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -70,6 +82,8 @@ room7:
   capacity: 5
   floor: 10
   uuid: 7
+  did: 021-61976412
+  extension: 6412
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -81,6 +95,8 @@ room8:
   capacity: 10 
   floor: 10
   uuid: 8
+  did: 021-61976414
+  extension: 6414
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -92,6 +108,8 @@ room9:
   capacity: 10
   floor: 10
   uuid: 9
+  did: 021-61976417
+  extension: 6417
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -102,6 +120,8 @@ room10:
   capacity: 15
   floor: 11
   uuid: 11
+  did: 021-61976423
+  extension: 6423
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -113,6 +133,8 @@ room11:
   capacity: 15
   floor: 11
   uuid: 12
+  did: 021-61976419
+  extension: 6419
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -124,6 +146,8 @@ room12:
   capacity: 15
   floor: 11
   uuid: 13
+  did: 021-61976421
+  extension: 6421
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -135,6 +159,8 @@ room13:
   capacity: 15
   floor: 11
   uuid: 14
+  did: 021-61976422
+  extension: 6422
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -146,6 +172,8 @@ room14:
   capacity: 15
   floor: 11
   uuid: 15
+  did: 021-61976424
+  extension: 6424
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -156,6 +184,8 @@ room15:
   capacity: 20
   floor: 11
   uuid: 10
+  did: 021-61976420
+  extension: 6420
   adminonly: true
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
@@ -166,7 +196,45 @@ room16:
   capacity: 100
   floor: 10
   uuid: 16
+  did: 021-61976450
+  extension: 6450
   adminonly: true
   created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+room17:
+  name: Crimson Tide/Sandybrook/Fisherman Pride
+  chinese: 满江红/浣溪沙/渔家傲
+  capacity: 75
+  floor: 10
+  uuid: 17
+  did: 021-61976410
+  extension: 6410
+  adminonly: true
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+room18:
+  name: Crimson Tide/Sandybrook
+  chinese: 满江红/浣溪沙                                                 
+  capacity: 50                                                                 
+  floor: 10                                                                     
+  uuid: 18                                                                      
+  did: 021-61976410                                                               
+  extension: 6410                                                               
+  adminonly: true                                                               
+  created_at: <%= Time.now %>                                                   
+  updated_at: <%= Time.now %>
+
+room19:
+  name: Sandybrook/Fisherman Pride                                 
+  chinese: 浣溪沙/渔家傲                                                 
+  capacity: 50                                                                 
+  floor: 10                                                                     
+  uuid: 19                                                                      
+  did: 021-61976416                                                               
+  extension: 6416                                                                 
+  adminonly: true                                                               
+  created_at: <%= Time.now %>                                                   
   updated_at: <%= Time.now %>
 

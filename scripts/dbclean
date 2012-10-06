@@ -1,0 +1,2 @@
+mysql -u root -psteve -e 'drop database if exists booker;'
+

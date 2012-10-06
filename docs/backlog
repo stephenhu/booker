@@ -9,35 +9,35 @@ closed:
 - user reservations
 - use mysql instead of sqlite3
 - user icon
+- validation of recurring logic
+- modify non-recurring to recurring logic
+- tags navbar
+- bundled rooms e.g. crimson tide
+- copyright should be padded a bit
+- cancel single invite
+- cancel recurring invite 
+- cancel meeting refresh page.
+- phone number
+- admin only rooms, acl
+- access control for users, for viewing things like reservations
 
 open:
 - email, sendgrid
 - ics generation
-- validation of recurring logic
 - search
-- admin only rooms, acl
 - add in holidays
 - named groups, essential groups of invitees, sort of like an email alias, but not.
-- bundled rooms e.g. crimson tide
 - don't allow meetings to be booked in the past
 - different views of the booked meetings, so today, weekly, monthly.
 - configurable ip address for site.
 - logging
 - load balancing and redundancy
 - refactor code so that it's not all in server.rb
-- copyright should be padded a bit
-- cancel single invite
-- cancel recurring invite 
 - cancel multi-day invite
 - jquery 1.8.2
 - cascaded deletes for invitees
-- access control for users, for viewing things like reservations
 - empty invitee list, use case is creating a placeholder event
 - redundant email removal
-- modify non-recurring to recurring logic
-- cancel meeting refresh page.
 - script to load jquery, jquery plugins, and bootstrap
-- tags navbar
-- phone number
 - outline meeting rooms
--    
+- 

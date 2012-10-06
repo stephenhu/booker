@@ -26,7 +26,8 @@
               %th start
               %th end
               %th recurring
-              %th action 
+              %th action
+              - admin = [ 1, 2, 3, 15, 17, 18, 19 ] 
               - book.each do |k,v|
                 - if v[:open]
                   %tr.success
@@ -36,8 +37,10 @@
                     %td= v[:end]
                     %td= v[:recurring]
                     %td
-                      %button.btn.btn-info.btn-mini{:onclick => "redirect( 'reservations', '', 'roomid=#{room.id}&start=#{v[:start]}&end=#{v[:end]}' ); return false;" }
-                        book
+                      - admin_room = admin.include?(room.uuid) 
+                      - if @user != nil and ((admin_room and @user.admin) or !admin_room)
+                        %button.btn.btn-info.btn-mini{:onclick => "redirect( 'reservations', '', 'roomid=#{room.id}&start=#{v[:start]}&end=#{v[:end]}' ); return false;" }
+                          book
                 - else
                   %tr.info
                     %td= v[:organizer]

@@ -24,6 +24,8 @@ class InitSchema < ActiveRecord::Migration
       t.string :chinese, :null => false
       t.integer :capacity
       t.text :description
+      t.string :did
+      t.string :extension
       t.integer :uuid
       t.integer :floor
       t.boolean :adminonly, :default => false

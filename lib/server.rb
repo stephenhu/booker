@@ -169,6 +169,29 @@ helpers do
     return start + duration.to_f * 3600
   end
 
+  def join_rooms(roomid)
+
+    case roomid
+    when 1
+      a = [ 1, 17, 18 ]
+    when 2
+      a = [ 2, 17, 18, 19 ]
+    when 3
+      a = [ 3, 17, 19 ]
+    when 17
+      a = [ 1, 2, 3, 17, 18, 19 ]
+    when 18
+      a = [ 1, 2, 17, 18, 19 ]
+    when 19
+      a = [ 2, 3, 17, 19 ]
+    else
+      a = [ roomid ]
+    end
+
+    return a
+
+  end
+
   def check_conflict( meetings, reserveid )
 
     if !reserveid.nil?
@@ -177,20 +200,22 @@ helpers do
 
     meetings.each do |meeting|
 
+      roomids = join_rooms(meeting[:roomid])
+
       if rsvps.nil?
 
         r = Reservation.where( 
-          "room_id = :roomid AND ((start <= :start AND end > :start)" +
+          "room_id IN (:roomids) AND ((start <= :start AND end > :start)" +
           " OR (start <= :end AND end > :end))",
-          { :roomid => meeting[:roomid], :start => meeting[:start],
+          { :roomids => roomids, :start => meeting[:start],
           :end => meeting[:end] } ).all
 
       else
 
         r = Reservation.where(                                                  
-          "room_id = :roomid AND ((start <= :start AND end > :start)" +         
+          "room_id IN (:roomids) AND ((start <= :start AND end > :start)" +         
           " OR (start <= :end AND end > :end)) AND (id NOT IN (:rsvps))",          
-          { :roomid => meeting[:roomid], :start => meeting[:start],             
+          { :roomids => roomids, :start => meeting[:start],             
           :end => meeting[:end], :rsvps => rsvps } ).all
 
       end
@@ -624,7 +649,7 @@ get "/rooms/?.?:roomid?" do
 
   case params[:roomid]
   when nil
-    @rooms = Room.all
+    @rooms = Room.order(:floor).all
     haml :roomsall, :locals => { :rooms => @rooms }
   else
     @room = Room.where( 'id' => params[:roomid].to_i ).first
@@ -644,7 +669,11 @@ get "/reservations/?.?:reserveid?" do
 
   @user = check_token
 
-  @rooms = Room.all
+  if @user.nil?
+    redirect "/login"
+  end
+
+  @rooms = Room.all 
 
   if params[:update].nil?
 
@@ -671,10 +700,21 @@ get "/reservations/?.?:reserveid?" do
 
 end
 
-get "/tags/:tagname" do
+get "/tags/?.?:tagname?" do
 
-  @ts = Room.joins(:tags).where('tags.tag' => params[:tagname])
-  haml :tags, :locals => { :tag => params[:tagname], :tags => @ts }
+  @user = check_token
+
+  if params[:tagname].nil?
+
+    tags = Tag.all
+    haml :tagsall, :locals => { :tags => tags }
+
+  else
+
+    @ts = Room.joins(:tags).where('tags.tag' => params[:tagname])
+    haml :tags, :locals => { :tag => params[:tagname], :tags => @ts }
+
+  end
 
 end
 
@@ -765,7 +805,8 @@ post "/rest/reservations" do
   end
 
   if check_conflict( meetings, nil )
-    return Yajl::Encoder.encode("6000, room conflict")
+    halt 409,
+      Yajl::Encoder.encode("Meeting room has already been booked at this time")
   else
 
     if recur == 1 or recur == 2 or recur == 3
@@ -805,16 +846,19 @@ delete "/rest/reservations/:reserveid" do
 
   if params[:recurring].nil?
     logger.error "logic error delete reservation"
+    halt 400, Yajl::Encoder.encode("Missing parameter")
   else
     puts params[:recurring]
 
     if params[:recurring] == "1"
-      cancel_meeting( params[:reserveid], true )
+      cancel_meeting( params[:reserveid].to_i, true )
     else
-      cancel_meeting( params[:reserveid], false )
+      cancel_meeting( params[:reserveid].to_i, false )
     end
 
   end
+
+  return Yajl::Encoder.encode("Deleted successfully")
 
 end
 
@@ -867,7 +911,8 @@ put "/rest/reservations/:reserveid" do
       end
 
       if check_conflict( meetings, reserveid )
-        return Yajl::Encoder.encode("6000, room conflict")
+        halt 409,
+          Yajl::Encoder.encode("Meeting room has already been booked at this time.")
       else
 
          Reservation.transaction do
@@ -900,7 +945,8 @@ put "/rest/reservations/:reserveid" do
           end
 
           if check_conflict( meetings, reserveid )
-            return Yajl::Encoder.encode("6000, room conflict")
+            halt 409,
+              Yajl::Encoder.encode("Meeting room has already been booked at this time.")
           else
 
             update_reservations( reserveid, roomid, title, details, recur,
@@ -922,7 +968,8 @@ put "/rest/reservations/:reserveid" do
     end
 
     if check_conflict( meetings, reserveid )
-      return Yajl::Encoder.encode("6000, room conflict")
+      halt 409,
+        Yajl::Encoder.encode("Meeting room has already been booked at this time.")
     else
 
       Reservation.transaction do

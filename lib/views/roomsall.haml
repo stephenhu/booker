@@ -11,6 +11,7 @@
         %th tags
         %th capacity
         %th
+        - admin = [ 1, 2, 3, 15, 17, 18, 19 ]
         - rooms.each do |room|
           %tr.success
             %td
@@ -21,14 +22,16 @@
             %td
               -room.tags.each do |tag|
                 - if tag.tag == "admin"
-                  %button.btn.btn-warning.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}', null ); return false;"}
+                  %button.btn.btn-warning.btn-mini{ :onclick => "redirect( 'tags', '#{tag.tag}', null ); return false;" }
 
                     = tag.tag
                 - else
-                  %button.btn.btn-success.btn-mini{:onclick => "redirect( 'tags', '#{tag.tag}', null ); return false;"}
+                  %button.btn.btn-success.btn-mini{ :onclick => "redirect( 'tags', '#{tag.tag}', null ); return false;" }
                     = tag.tag
             %td
               = room.capacity
             %td
-              %button.btn.btn-info.btn-mini{ :onclick => "redirect( 'reservations', '', 'roomid=#{room.id}' ); return false" } book 
+              - admin_room = admin.include?(room.uuid)
+              - if @user != nil and ((admin_room and @user.admin) or !admin_room)
+                %button.btn.btn-info.btn-mini{ :onclick => "redirect( 'reservations', '', 'roomid=#{room.id}' ); return false" } book 
 

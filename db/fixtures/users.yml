@@ -11,10 +11,57 @@
 
 user10:                                                                          
   email: hus@vmware.com                                                         
-  first: stephen                                                                
-  last: hu                                                                      
   canonical: hus                                                                
-  team_id: 2                                                                    
+  team_id: 2
+  admin: true                                                                
   created_at: <%= Time.now %>                                                   
   updated_at: <%= Time.now %>   
        
+user11:
+  email: dzhu@vmware.com
+  canonical: dzhu
+  team_id: 3
+  admin: true
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+user12:
+  email: wanc@vmware.com
+  canonical: wanc
+  team_id: 3
+  admin: true
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+user13:
+  email: chli@vmware.com
+  canonical: chli
+  team_id: 3
+  admin: true
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+user14:
+  email: kgao@vmware.com
+  canonical: kgao
+  team_id: 3
+  admin: true
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+user15:
+  email: djin@vmware.com
+  canonical: djin
+  team_id: 3
+  admin: true
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+
+user16:
+  email: caoj@vmware.com
+  canonical: caoj
+  team_id: 3
+  admin: true
+  created_at: <%= Time.now %>
+  updated_at: <%= Time.now %>
+

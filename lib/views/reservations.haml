@@ -30,13 +30,16 @@
       %br
       %br
       %select.input-xxlarge{ :id => "uuid" }
+        - admin = [ 1, 2, 3, 15, 17, 18, 19 ]
         - rooms.each do |room|
           - if room.id == id.to_i
             %option{ :value => "#{room.uuid}", :selected => "selected" } 
               = room.full_name
           - else
-            %option{ :value => "#{room.uuid}" }
-              = room.full_name
+            - admin_room = admin.include?(room.uuid)
+            - if (@user.admin and admin_room) or !admin_room
+              %option{ :value => "#{room.uuid}" }
+                = room.full_name
       %form.form-inline
         - if !update
           %input#datepicker1{ :type => "text", :placeholder => "start date", :value => "#{Date.today.strftime( "%m/%d/%Y" )}" }

@@ -6,11 +6,11 @@
 .container-fluid
   .row-fluid
     .span12
-      %h2= tag
+      %h2 tags
       %table
-        - tags.each do |room|
+        - tags.each do |tag|
           %tr
             %td
-              %a{:href => url("/rooms/#{room.id}")}
-                = room.name
+              %a{:href => url("/tags/#{tag.tag}")}
+                = tag.tag
 %hr
