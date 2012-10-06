@@ -10,7 +10,7 @@
 <% end %>
 
 user10:                                                                          
-  email: hus@vmware.com                                                         
+  email: hus+admin@vmware.com                                                         
   canonical: hus                                                                
   team_id: 2
   admin: true                                                                
@@ -18,7 +18,7 @@ user10:
   updated_at: <%= Time.now %>   
        
 user11:
-  email: dzhu@vmware.com
+  email: dzhu+admin@vmware.com
   canonical: dzhu
   team_id: 3
   admin: true
@@ -26,7 +26,7 @@ user11:
   updated_at: <%= Time.now %>
 
 user12:
-  email: wanc@vmware.com
+  email: wanc+admin@vmware.com
   canonical: wanc
   team_id: 3
   admin: true
@@ -34,7 +34,7 @@ user12:
   updated_at: <%= Time.now %>
 
 user13:
-  email: chli@vmware.com
+  email: chli+admin@vmware.com
   canonical: chli
   team_id: 3
   admin: true
@@ -42,7 +42,7 @@ user13:
   updated_at: <%= Time.now %>
 
 user14:
-  email: kgao@vmware.com
+  email: kgao+admin@vmware.com
   canonical: kgao
   team_id: 3
   admin: true
@@ -50,7 +50,7 @@ user14:
   updated_at: <%= Time.now %>
 
 user15:
-  email: djin@vmware.com
+  email: djin+admin@vmware.com
   canonical: djin
   team_id: 3
   admin: true
@@ -58,7 +58,7 @@ user15:
   updated_at: <%= Time.now %>
 
 user16:
-  email: caoj@vmware.com
+  email: caoj+admin@vmware.com
   canonical: caoj
   team_id: 3
   admin: true

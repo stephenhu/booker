@@ -61,7 +61,7 @@ class Invite < ActionMailer::Base
         event.dtend           = reservation.end
         event.dtstamp         = stamp
         event.last_modified   = stamp
-        event.organizer       = reservation.organizer_email
+        event.organizer       = reservation.organizer_email.gsub( "+admin", "" )
         event.location        = reservation.room_name
 
         invitees.each do |invitee|
@@ -75,7 +75,7 @@ class Invite < ActionMailer::Base
 
   def meeting_invite( reservation, recipients )
 
-    recipients.push reservation.organizer_email
+    recipients.push reservation.organizer_email.gsub( "+admin", "" )
 
     puts "the recipients #{recipients}"
 
@@ -110,8 +110,8 @@ helpers do
 
   end
 
-  def register(email)
-    User.create(:email => email)
+  def register( email, admin )
+    User.create( :email => email, :admin => admin )
   end
 
   def check_token
@@ -130,12 +130,12 @@ helpers do
 
   end
 
-  def authenticate(email)
+  def authenticate( email, admin )
 
     u = User.find_by_email(email)
 
     if u.nil?
-      u = register(email)
+      u = register( email, admin )
     end
 
     #cipher = OpenSSL::Cipher.new("bf")
@@ -834,7 +834,7 @@ end
 
 post "/rest/authenticate" do
 
-  token = authenticate(params[:email])
+  token = authenticate( params[:email], params[:admin] )
   response.set_cookie( "booker", :value => token, :path => "/",
     :expires => Time.now + (60*60*24*30) )
 
