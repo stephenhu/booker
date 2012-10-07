@@ -306,22 +306,24 @@ helpers do
 
   end
 
-  def get_multi_day( roomid, s, e )
+  def get_multi_day( roomid, s, enddate, duration )
     
     meetings = Array.new
-
-    end_date = Date.strptime( e, "%m/%d/%Y" )
-    delta = (end_date - s.to_date + 1).to_i
- 
+    
+    delta = (Date.strptime( enddate, "%m/%d/%Y" ) - s.to_date + 1).to_i
+    puts "enddate: #{enddate} start: #{s.to_date}"
+    puts "delta is #{delta}" 
     delta.times do |day|
+
       start_time = s + day * 60 * 60 * 24
-      end_date = start_time.to_date
-      end_time   = end_date.to_time + 18 * 60 * 60 
-      puts "day = #{day} start = #{start_time} end = #{end_time} wday = #{end_date.wday}"
-      if !end_date.saturday? and !end_date.sunday?
+      end_time = start_time + duration.to_f * 3600 
+      logger.info "day = #{day} start = #{start_time} end = #{end_time} wday = #{end_time.to_date.wday}"
+
+      if !end_time.to_date.saturday? and !end_time.to_date.sunday?
         hash = { :roomid => roomid, :start => start_time, :end => end_time }
         meetings.push hash
       end
+
     end
 
     return meetings
@@ -786,20 +788,22 @@ post "/rest/reservations" do
   
   user = extract_user(token)
 
-  roomid  = params[:roomid].to_i
-  recur   = params[:recurring].to_i
-  enddate = params[:end]
+  roomid    = params[:roomid].to_i
+  recur     = params[:recurring].to_i
+  enddate   = params[:end]
+  duration  = params[:duration]
 
   if recur != 0 and recur != 4
     enddate = params[:start]
   end
 
   s = get_start( params[:start], params[:time] )
-  e = get_end( s, params[:duration] )
+  e = get_end( s, duration )
+
   logger.info "#{s} - #{e}"
 
   if recur == 4 
-    meetings = get_multi_day( roomid, s, params[:end] )
+    meetings = get_multi_day( roomid, s, enddate, duration )
   else
     meetings = get_recurring( roomid, recur, s, e )
   end
@@ -809,7 +813,7 @@ post "/rest/reservations" do
       Yajl::Encoder.encode("Meeting room has already been booked at this time")
   else
 
-    if recur == 1 or recur == 2 or recur == 3
+    if recur == 1 or recur == 2 or recur == 3 or recur == 4
       seriesid = Digest::MD5.hexdigest(user.to_s + meetings.to_s)[0,10].downcase
     else
       seriesid = ""
@@ -866,24 +870,18 @@ put "/rest/reservations/:reserveid" do
 
   user = check_token
 
-  # case 1: if changed from recurring to none
-  # case 2: no change
-  # case 3: if changed from none to recurring
-
-  s = get_start( params[:start], params[:time] )
-  e = get_end( s, params[:duration] )
-
   reserveid = params[:reserveid].to_i
   recur     = params[:recurring].to_i
   roomid    = params[:roomid].to_i
   title     = params[:title]
   details   = params[:details]
+  enddate   = params[:enddate]
+  duration  = params[:duration]
+
+  s = get_start( params[:start], params[:time] )
+  e = get_end( s, params[:duration] )
 
   reservations = get_reservations(reserveid)
-
-  puts "reservations: #{reservations.length}"
-  puts "recur: #{recur}"
-  puts "#{s} #{e}"
 
   if recur == reservations[0].recurring
     
@@ -905,7 +903,7 @@ put "/rest/reservations/:reserveid" do
     else
 
       if recur == 4
-        meetings = get_multi_day( roomid, s, params[:end] )
+        meetings = get_multi_day( roomid, s, enddate, duration )
       else
         meetings = get_recurring( roomid, recur, s, e )
       end
@@ -939,7 +937,7 @@ put "/rest/reservations/:reserveid" do
 
           puts "time change"
           if recur == 4
-            meetings = get_multi_day( roomid, s, params[:end] )
+            meetings = get_multi_day( roomid, s, enddate, duration )
           else
             meetings = get_recurring( roomid, recur, s, e )
           end
@@ -962,7 +960,7 @@ put "/rest/reservations/:reserveid" do
   elsif recur < reservations[0].recurring
 
     if recur == 4
-      meetings = get_multi_day( roomid, s, params[:end] )
+      meetings = get_multi_day( roomid, s, enddate, duration )
     else
       meetings = get_recurring( roomid, recur, s, e )
     end

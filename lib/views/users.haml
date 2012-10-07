@@ -22,8 +22,8 @@
       %h2
         = user.canonical
         %img{ :src => url("/images/#{user.icon}") }
-      %h3 reservations
-      %table.table.table-striped
+      %h4 this week's reservations
+      %table.table.table-striped.table-bordered
         %th title
         %th start
         %th end
@@ -31,8 +31,7 @@
         %th recurring
         %th invitees
         %th
-        - r = [ "none", "weekly", "bi-weekly", "monthly", "multi-day" ]
-        - user.reservations.each do |reservation|
+        - user.reservations.order(:start).each do |reservation|
           - if reservation.start.to_date >= Date.today and reservation.start.to_date <= Date.today.end_of_week
             %tr
               %td= reservation.title
@@ -52,7 +51,39 @@
                 - else
                   %a{ :href => "", :onclick => "redirect( 'reservations', #{reservation.originid}, 'update=true' ); return false;" }
                     %img{ :src => url("images/glyphicons_019_cogwheel.png") }
-                %a{ :href => "", :id => "cancel-reservation", :onclick => "open_cancel_dialog(#{reservation.id}); return false;" }
+                %a{ :href => "", :onclick => "open_cancel_dialog(#{reservation.id}); return false;" }
                   %img{ :src => url("images/glyphicons_207_remove_2.png") }
       %hr
-
+      %h4 past this week's reservations                                              
+      %table.table.table-striped.table-bordered                                           
+        %th title                                                               
+        %th start                                                               
+        %th end                                                                 
+        %th room                                                                
+        %th recurring                                                           
+        %th invitees                                                            
+        %th                                                                     
+        - user.reservations.order(:start).each do |reservation|                               
+          - if reservation.start.to_date > Date.today.end_of_week
+            %tr                                                                 
+              %td= reservation.title                                            
+              %td= reservation.start.ctime                                      
+              %td= reservation.end.ctime                                        
+              %td                                                               
+                %a{ :href => "/rooms/#{reservation.room_id}" }                  
+                  = reservation.room_name                                       
+              %td= reservation.recurring_name                                   
+              %td                                                               
+                - reservation.invitees.each do |i|                              
+                  = "#{i.email}"                                                
+              %td                                                               
+                - if reservation.originid.nil?                                  
+                  %a{ :href => "", :onclick => "redirect( 'reservations', #{reservation.id}, 'update=true' ); return false;" }
+                    %img{ :src => url("images/glyphicons_019_cogwheel.png") }
+                - else
+                  %a{ :href => "", :onclick => "redirect( 'reservations', #{reservation.originid}, 'update=true' ); return false;" }
+                    %img{ :src => url("images/glyphicons_019_cogwheel.png") }   
+                %a{ :href => "", :onclick => "open_cancel_dialog(#{reservation.id}); return false;" }
+                  %img{ :src => url("images/glyphicons_207_remove_2.png") }     
+      %hr
+                                                                       
