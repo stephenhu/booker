@@ -555,7 +555,7 @@ helpers do
       end
 
       schedule[index][:title]     = b.title
-      schedule[index][:organizer] = b.user_id
+      schedule[index][:organizer] = b.organizer_email
       schedule[index][:recurring] = rec[b.recurring]
       schedule[index][:open]      = false
 
