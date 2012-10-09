@@ -22,7 +22,8 @@ Dir.glob("./models/*").each { |r| require r }
 env = ENV["RACK_ENV"] || "development"
 
 config =
-  YAML.load_file('/home/hu/projects/booker/config/database.yml')[env]
+ # YAML.load_file('/home/hu/projects/booker/config/database.yml')[env]
+  YAML.load_file(File.join( Sinatra::Application.root,  "../config/database.yml" ) )[env]
 
 ActiveRecord::Base.logger = Logger.new("db.log")
 ActiveRecord::Base.establish_connection config
