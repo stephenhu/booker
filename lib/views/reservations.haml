@@ -11,8 +11,8 @@
   .row-fluid
     .span12
       %h2 book meeting
-      %input.input-large.hidden{ :type => "email", :id => "email", :placeholder => "email" }
-      %span.error.hidden{ :id => "email-error" } required
+      -#%input.input-large.hidden{ :type => "email", :id => "email", :placeholder => "email" }
+      -#%span.error.hidden{ :id => "email-error" } required
       %br
       - if !update
         %input.input-xlarge{ :type => "text", :id => "title", :placeholder => "meeting title" }
@@ -20,25 +20,25 @@
         %input.input-xlarge{ :type => "text", :id => "title", :placeholder => "meeting title", :value => "#{title}" }
       %span.error.hidden{ :id => "title-error" } required 
       %br
-      - if !update
-        %input.input-xxlarge{ :type => "text", :id => "invitees", :placeholder => "invitees (comma separated)" }
-      - else
-        %input.input-xxlarge{ :type => "text", :id => "invitees", :placeholder => "invitees (comma separated)", :value => "#{invitees}" }
-      %span.error.hidden{ :id => "invitees-error" } required
-      %span.error.hidden{ :id => "invalid-email-error" } invalid email address or addresses
-      %span.error.hidden{ :id => "invalid-email-domain-error" } must be from emc, mozy, rbcon, or vmware domain
-      %br
-      %br
-      %select.input-xxlarge{ :id => "uuid" }
-        - admin = [ 1, 2, 3, 15, 17, 18, 19 ]
+      -#- if !update
+        -#%input.input-xxlarge{ :type => "text", :id => "invitees", :placeholder => "invitees (comma separated)" }
+      -#- else
+        -#%input.input-xxlarge{ :type => "text", :id => "invitees", :placeholder => "invitees (comma separated)", :value => "#{invitees}" }
+      -#%span.error.hidden{ :id => "invitees-error" } required
+      -#%span.error.hidden{ :id => "invalid-email-error" } invalid email address or addresses
+      -#%span.error.hidden{ :id => "invalid-email-domain-error" } must be from emc, mozy, rbcon, or vmware domain
+      -#%br
+      -#%br
+      %select.input-xxlarge{ :id => "roomid" }
+        - admin = [ 1, 2, 3, 14, 15, 17, 18, 19, 20 ]
         - rooms.each do |room|
           - if room.id == id.to_i
-            %option{ :value => "#{room.uuid}", :selected => "selected" } 
+            %option{ :value => "#{room.id}", :selected => "selected" } 
               = room.full_name
           - else
-            - admin_room = admin.include?(room.uuid)
+            - admin_room = admin.include?(room.id)
             - if (@user.admin and admin_room) or !admin_room
-              %option{ :value => "#{room.uuid}" }
+              %option{ :value => "#{room.id}" }
                 = room.full_name
       %form.form-inline
         - if !update

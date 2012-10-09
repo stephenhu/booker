@@ -1,9 +1,9 @@
 room1:
+  id: 1
   name: Crimson Tide
   chinese: 满江红
   capacity: 25 
   floor: 10
-  uuid: 1
   did: 021-61976410
   extension: 6410
   adminonly: true
@@ -12,11 +12,11 @@ room1:
 
 
 room2:
+  id: 2
   name: Sandy Brook
   chinese: 浣溪沙
   capacity: 25
   floor: 10
-  uuid: 2
   did: 021-61976416
   extension: 6416
   adminonly: false
@@ -25,11 +25,11 @@ room2:
 
 
 room3:
+  id: 3
   name: Fisherman Pride
   chinese: 渔家傲
   capacity: 25
   floor: 10
-  uuid: 3
   did: 021-61976415
   extension: 6415
   adminonly: false
@@ -38,11 +38,11 @@ room3:
 
 
 room4:
+  id: 4
   name: Garden Spring
   chinese: 沁园春
   capacity: 15
   floor: 10
-  uuid: 4
   did: 021-61976411
   extension: 6411
   adminonly: false
@@ -51,11 +51,11 @@ room4:
 
 
 room5:
+  id: 5
   name: Plum Blossom
   chinese: 一剪梅
   capacity: 5
   floor: 10
-  uuid: 5
   did: 021-61976413
   extension: 6413
   adminonly: false
@@ -64,11 +64,11 @@ room5:
 
 
 room6:
+  id: 6
   name: Ocean Songs
   chinese: 水调歌头
   capacity: 8
   floor: 10
-  uuid: 6
   did: 021-61976418
   extension: 6418
   adminonly: true
@@ -77,11 +77,11 @@ room6:
 
 
 room7:
+  id: 7
   name: Fair Lady
   chinese: 念奴娇
   capacity: 5
   floor: 10
-  uuid: 7
   did: 021-61976412
   extension: 6412
   adminonly: false
@@ -90,11 +90,11 @@ room7:
 
 
 room8:
+  id: 8
   name: BoF
   chinese: 蝶恋花
   capacity: 10 
   floor: 10
-  uuid: 8
   did: 021-61976414
   extension: 6414
   adminonly: false
@@ -103,11 +103,11 @@ room8:
 
 
 room9:
+  id: 9
   name: Buddha Hymns
   chinese: 菩萨蛮
   capacity: 10
   floor: 10
-  uuid: 9
   did: 021-61976417
   extension: 6417
   adminonly: false
@@ -115,11 +115,23 @@ room9:
   updated_at: <%= Time.now %>
 
 room10:
+  id: 10                                                                         
+  name: Moon River                                                              
+  chinese: 春江花月夜                                                           
+  capacity: 20                                                                  
+  floor: 11                                                                     
+  did: 021-61976420                                                             
+  extension: 6420                                                               
+  adminonly: true                                                               
+  created_at: <%= Time.now %>                                                   
+  updated_at: <%= Time.now %>
+
+room11:
+  id: 11
   name: Boat Song
   chinese: 渔舟唱晚
   capacity: 15
   floor: 11
-  uuid: 11
   did: 021-61976423
   extension: 6423
   adminonly: false
@@ -127,12 +139,12 @@ room10:
   updated_at: <%= Time.now %>
 
 
-room11:
+room12:
+  id: 12
   name: Mountain Creek
   chinese: 高山流水
   capacity: 15
   floor: 11
-  uuid: 12
   did: 021-61976419
   extension: 6419
   adminonly: false
@@ -140,12 +152,12 @@ room11:
   updated_at: <%= Time.now %>
 
 
-room12:
+room13:
+  id: 13
   name: Flying Daggers
   chinese: 十面埋伏
   capacity: 15
   floor: 11
-  uuid: 13
   did: 021-61976421
   extension: 6421
   adminonly: false
@@ -153,12 +165,12 @@ room12:
   updated_at: <%= Time.now %>
 
 
-room13:
+room14:
+  id: 14
   name: Spring Snow
   chinese: 阳春白雪
-  capacity: 15
+  capacity: 10
   floor: 11
-  uuid: 14
   did: 021-61976422
   extension: 6422
   adminonly: false
@@ -166,36 +178,24 @@ room13:
   updated_at: <%= Time.now %>
 
 
-room14:
+room15:
+  id: 15
   name: Silver Cloud
   chinese: 彩云追月
-  capacity: 15
+  capacity: 10
   floor: 11
-  uuid: 15
   did: 021-61976424
   extension: 6424
   adminonly: false
   created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
 
-room15:
-  name: Moon River
-  chinese: 春江花月夜
-  capacity: 20
-  floor: 11
-  uuid: 10
-  did: 021-61976420
-  extension: 6420
-  adminonly: true
-  created_at: <%= Time.now %>
-  updated_at: <%= Time.now %>
-
 room16:
+  id: 16
   name: Pantry
   chinese: 大厅
   capacity: 100
   floor: 10
-  uuid: 16
   did: 021-61976450
   extension: 6450
   adminonly: true
@@ -203,11 +203,11 @@ room16:
   updated_at: <%= Time.now %>
 
 room17:
+  id: 17
   name: Crimson Tide/Sandybrook/Fisherman Pride
   chinese: 满江红/浣溪沙/渔家傲
   capacity: 75
   floor: 10
-  uuid: 17
   did: 021-61976410
   extension: 6410
   adminonly: true
@@ -215,11 +215,11 @@ room17:
   updated_at: <%= Time.now %>
 
 room18:
+  id: 18
   name: Crimson Tide/Sandybrook
   chinese: 满江红/浣溪沙                                                 
   capacity: 50                                                                 
   floor: 10                                                                     
-  uuid: 18                                                                      
   did: 021-61976410                                                               
   extension: 6410                                                               
   adminonly: true                                                               
@@ -227,14 +227,26 @@ room18:
   updated_at: <%= Time.now %>
 
 room19:
+  id: 19
   name: Sandybrook/Fisherman Pride                                 
   chinese: 浣溪沙/渔家傲                                                 
   capacity: 50                                                                 
   floor: 10                                                                     
-  uuid: 19                                                                      
   did: 021-61976416                                                               
   extension: 6416                                                                 
   adminonly: true                                                               
   created_at: <%= Time.now %>                                                   
+  updated_at: <%= Time.now %>
+
+room20:
+  id: 20
+  name: Spring Snow/Silver Cloud
+  chinese: 阳春白雪/彩云追月
+  capacity: 20
+  floor: 11
+  did: 021-61976422
+  extension: 6422
+  adminonly: true
+  created_at: <%= Time.now %>
   updated_at: <%= Time.now %>
 

@@ -11,7 +11,7 @@
         %th tags
         %th capacity
         %th
-        - admin = [ 1, 2, 3, 15, 17, 18, 19 ]
+        - admin = [ 1, 2, 3, 14, 15, 17, 18, 19, 20 ]
         - rooms.each do |room|
           %tr.success
             %td
@@ -31,7 +31,7 @@
             %td
               = room.capacity
             %td
-              - admin_room = admin.include?(room.uuid)
+              - admin_room = admin.include?(room.id)
               - if @user != nil and ((admin_room and @user.admin) or !admin_room)
                 %button.btn.btn-info.btn-mini{ :onclick => "redirect( 'reservations', '', 'roomid=#{room.id}' ); return false" } book 
 

@@ -179,12 +179,18 @@ helpers do
       a = [ 2, 17, 18, 19 ]
     when 3
       a = [ 3, 17, 19 ]
+    when 14
+      a = [ 14, 20 ]
+    when 15
+      a = [ 15, 20 ]
     when 17
       a = [ 1, 2, 3, 17, 18, 19 ]
     when 18
       a = [ 1, 2, 17, 18, 19 ]
     when 19
       a = [ 2, 3, 17, 19 ]
+    when 20
+      a = [ 14, 15, 20 ]
     else
       a = [ roomid ]
     end
@@ -532,12 +538,14 @@ helpers do
 
   def get_schedule(roomid)
 
+    roomids = join_rooms(roomid)
+
     @book = Reservation.where(
-      "room_id = :roomid AND start >= :s AND end <= :e",
-      { :roomid => params[:roomid].to_i, :s => Time.now.beginning_of_day,
+      "room_id IN (:roomids) AND start >= :s AND end <= :e",
+      { :roomids => roomids, :s => Time.now.beginning_of_day,
       :e => Time.now.end_of_day } ).all
 
-    rec = [ "no", "weekly", "bi-weekly", "monthly" ]
+    rec = [ "none", "weekly", "bi-weekly", "monthly" ]
 
     schedule = init_schedule( 7, 19 )
 
@@ -657,7 +665,7 @@ get "/rooms/?.?:roomid?" do
   else
     @room = Room.where( 'id' => params[:roomid].to_i ).first
 
-    @book = get_schedule(params[:roomid])
+    @book = get_schedule(params[:roomid].to_i)
  
     if @room.nil?
       haml :error, :locals => { :msg => "Room Does Not Exist" }
@@ -695,7 +703,8 @@ get "/reservations/?.?:reserveid?" do
       :title => r.title, :details => r.details, :recurring => r.recurring,
       :sdate => r.start.strftime("%m/%d/%Y"),
       :edate => r.end.strftime("%m/%d/%Y"),
-      :invitees => r.invitees_delimited, :update => true,
+#      :invitees => r.invitees_delimited,
+      :update => true,
       :reserveid => params[:reserveid],
       :user_id => @user.id }
 
@@ -775,19 +784,7 @@ post "/rest/reservations" do
 
   logger.info "reservation request received"
 
-  if params[:email].empty?
-    token = request.cookies["booker"]
-  else
-
-    # not authenticated
-    token = authenticate(params[:email])
-    puts token
-    response.set_cookie( "booker", :value => token, :path => "/",
-      :expires => Time.now + (60*60*24*30) )
-
-  end
-  
-  user = extract_user(token)
+  user = check_token
 
   roomid    = params[:roomid].to_i
   recur     = params[:recurring].to_i
@@ -811,7 +808,8 @@ post "/rest/reservations" do
 
   if check_conflict( meetings, nil )
     halt 409,
-      Yajl::Encoder.encode("Meeting room has already been booked at this time")
+      Yajl::Encoder.encode(
+        { :msg => "Meeting room has already been booked at this time" } )
   else
 
     if recur == 1 or recur == 2 or recur == 3 or recur == 4
@@ -827,7 +825,7 @@ post "/rest/reservations" do
       result = reserve( user.id, params[:title], params[:details],
         params[:recurring], meetings, seriesid )
 
-      add_invitees result, params[:invitees]
+      #add_invitees result, params[:invitees]
 
     end
 
