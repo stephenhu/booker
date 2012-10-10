@@ -1,4 +1,4 @@
-<% 18.times do |i| %>
+<% 19.times do |i| %>
 <% room = "roomtag#{i+1}" %>
 <%= room %>:
   tag_id: 2
@@ -104,4 +104,12 @@ roomtag39:
 roomtag40:
   tag_id: 1
   room_id: 19
+
+roomtag41:
+  tag_id: 1
+  room_id: 20
+
+roomtag42:
+  tag_id: 4
+  room_id: 21
 
