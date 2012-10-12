@@ -163,12 +163,12 @@ helpers do
  
   end
 
-  def get_start( d, start )
-    return Date.strptime( d, "%m/%d/%Y" ).to_time + start.to_f * 3600
+  def get_date_time( d, time_float )
+    return Date.strptime( d, "%m/%d/%Y" ).to_time + time_float.to_f * 3600
   end
 
-  def get_end( start, duration )
-    return start + duration.to_f * 3600
+  def add_date_time( dtime, duration )
+    return dtime + duration.to_f * 3600
   end
 
   def get_end_day(reservations)
@@ -468,6 +468,8 @@ helpers do
         r.title       = title
         r.details     = details
         r.recurring   = new_recur
+        r.start       = meetings[0][:start]
+        r.end         = meetings[0][:end]
         r.save
       end
 
@@ -477,8 +479,8 @@ helpers do
 
     if old_recur == 4
 
-       if check_recurring(new_recur)
-         puts "to a recurring"
+       if check_recurring(new_recur) or new_recur == 4
+
          reserve( reservations[0].user_id, title, details, new_recur,
            meetings, seriesid, reservations[0].id )  
 
@@ -899,8 +901,8 @@ post "/rest/reservations" do
     enddate = params[:start]
   end
 
-  s = get_start( params[:start], params[:time] )
-  e = get_end( s, duration )
+  s = get_date_time( params[:start], params[:time] )
+  e = add_date_time( s, duration )
 
   logger.info "#{s} - #{e}"
 
@@ -985,8 +987,16 @@ put "/rest/reservations/:reserveid" do
   time      = params[:time]
   duration  = params[:duration]
 
-  s = get_start( startdate, time )
-  e = get_end( s, duration )
+  s = get_date_time( startdate, time )
+
+  if recur == 4
+
+    x = get_date_time( enddate, time )
+    e = add_date_time( x, duration )
+
+  else
+    e = add_date_time( s, duration )
+  end
 
   if !check_date(s)                                                             
     halt 409,                                                                   
@@ -1007,18 +1017,21 @@ put "/rest/reservations/:reserveid" do
   end
 
   if recur == old_recur
-    
+
     if old_start == s and old_end == e
 
       Reservation.transaction do
 
         reservations.each do |r|
+
           r.room_id = roomid
           r.title   = title
           r.details = details
+
           if r.changed?
             r.save
           end
+
         end
 
       end
@@ -1038,8 +1051,17 @@ put "/rest/reservations/:reserveid" do
  
         Reservation.transaction do
 
-           modify_reservations( reserveid, roomid, title, details, recur,
-             meetings, old_seriesid )   
+           if recur == 4
+
+             change_multi_day_reservations( reservations, roomid, title,
+               details, old_recur, recur, meetings, old_seriesid )
+ 
+           else
+
+             modify_reservations( reserveid, roomid, title, details, recur,
+               meetings, old_seriesid )
+
+           end   
 
          end
 
