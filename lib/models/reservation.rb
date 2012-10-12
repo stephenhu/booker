@@ -18,7 +18,7 @@ class Reservation < ActiveRecord::Base
 
   def recurring_name
 
-    recurring = [ "none", "weekly", "bi-weekly", "monthly", "multi-day" ]
+    recurring = [ "weekly", "bi-weekly", "monthly", "none", "multi-day" ]
     return recurring[self.recurring]    
 
   end

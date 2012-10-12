@@ -171,6 +171,18 @@ helpers do
     return start + duration.to_f * 3600
   end
 
+  def get_end_day(reservations)
+
+    multi = Reservation.where(:seriesid => reservations[0].seriesid)
+
+    if multi.nil?
+      halt 503, "Multi-day logic error."
+    else
+      return multi[multi.length-1].end
+    end
+
+  end
+
   def join_rooms(roomid)
 
     case roomid
@@ -197,6 +209,16 @@ helpers do
     end
 
     return a
+
+  end
+
+  def check_recurring(r)
+
+    if r == 3 or r == 4
+      return false
+    else
+      return true
+    end
 
   end
 
@@ -281,11 +303,11 @@ helpers do
 
     meetings = Array.new
 
-    case frequency.to_i                                                  
-    when 0                                                                        
+    case frequency
+    when 3                                                                        
       hash = { :roomid => roomid, :start => s, :end => e }               
       meetings.push hash                                                          
-    when 1                                                                        
+    when 0                                                                        
 # calculate 3 months of weekly                                              
       s1 = s                                                                      
       e1 = e
@@ -295,7 +317,7 @@ helpers do
         e1 = e1 + 7 * 60 * 60 * 24                                                
         meetings.push hash                                                        
       end                                                                         
-    when 2                                                                        
+    when 1                                                                        
       s2 = s                                                                      
       e2 = e                                                                      
 # calculate 3 months of bi-weekly                                           
@@ -305,7 +327,7 @@ helpers do
         e2 = e2 + 14 * 60 * 60 * 24                                               
         meetings.push hash                                                        
       end                                                                         
-    when 3                                                                        
+    when 2                                                                        
 # calculate 3 months of monthly                                             
       s3 = s                                                                      
       e3 = e                                                                      
@@ -345,18 +367,20 @@ helpers do
 
   end
 
-  def upgrade_reservations( reservations, meetings, new_recur, roomid, title,
-    details )
+  def upgrade_reservations( reservations, meetings, old_recur, new_recur,
+    roomid, title, details )
 
     t = [ 12, 6, 3 ]
 
-    old_recur = reservations[0].recurring
-
-    if (old_recur == 0)
+    if old_recur == 3
+      modulus = 0
+    elsif old_recur == 4
+      halt 503, "Multi-day reservation cannot be upgraded."
+    else
+      modulus = t[new_recur] / t[old_recur]
     end
 
-    modulus   = t[new_recur-1] / t[old_recur-1] 
-    index     = 0
+    index = 0
 
     reservations.each_with_index do |r,i|
 
@@ -376,8 +400,18 @@ helpers do
 
     meetings.each_with_index do |m,j|
 
-      if j % modulus != 0
-        uncreated.push m
+      if modulus != 0
+
+        if j % modulus != 0
+          uncreated.push m
+        end
+
+      else
+
+        if j != 0
+          uncreated.push m
+        end
+
       end
 
     end
@@ -389,31 +423,26 @@ helpers do
 
   end
 
-  def downgrade_reservations( reservations, new_recur, roomid, title, details )
+  def downgrade_reservations( reservations, old_recur, new_recur, roomid,
+    title, details )
 
     t = [ 12, 6, 3 ]
 
     if reservations.nil?
       halt 404, "Unable to find reservation(s)."
-    else
-      old_recur = reservations[0].recurring
     end
     
-    if old_recur == 0
-      halt 503, "cannot downgrade a non-recurring meeting"
+    if new_recur == 3
+      modulus = 0
+    elsif new_recur == 4
+      halt 503, "Cannot downgrade reservation to multi-day."
     else
-
-      if new_recur == 0
-        modulus = 0
-      else
-        modulus = t[old_recur-1] / t[new_recur-1]
-      end
-
+      modulus = t[old_recur] / t[new_recur]
     end
 
     reservations.each_with_index do |r,i|
 
-      if (modulus == 0 and i != 0 ) or (modulus != 0 and i % modulus != 0)
+      if (modulus == 0 and i != 0) or (modulus != 0 and i % modulus != 0)
         r.destroy
       else
         r.room_id     = roomid
@@ -423,6 +452,45 @@ helpers do
         r.save
       end
 
+    end
+
+  end
+
+  def change_multi_day_reservations( reservations, roomid, title, details,
+    old_recur, new_recur, meetings, seriesid )
+
+    reservations.each_with_index do |r,i|
+
+      if i != 0
+        r.destroy
+      else
+        r.room_id     = roomid
+        r.title       = title
+        r.details     = details
+        r.recurring   = new_recur
+        r.save
+      end
+
+    end
+
+    meetings.delete_at(0)
+
+    if old_recur == 4
+
+       if check_recurring(new_recur)
+         puts "to a recurring"
+         reserve( reservations[0].user_id, title, details, new_recur,
+           meetings, seriesid, reservations[0].id )  
+
+       end
+
+    elsif new_recur == 4
+
+      reserve( reservations[0].user_id, title, details, new_recur,
+        meetings, seriesid, reservations[0].id )
+
+    else
+      halt 503, "Unable to make reservation."
     end
 
   end
@@ -722,17 +790,30 @@ get "/reservations/?.?:reserveid?" do
 
   else
 
-    r = Reservation.find(params[:reserveid])
+    r = get_reservations(params[:reserveid].to_i)
+
+    if r.nil?
+      halt 404, "Reservation not found."
+    else
+
+      if r[0].recurring == 4
+        mday_last = get_end_day(r)
+        edate     = mday_last.strftime("%m/%d/%Y")
+      else
+        edate = r[0].end.strftime("%m/%d/%Y")
+      end
+
+    end
 
     haml :reservations, :locals => { :rooms => @rooms,
-      :id => r.room_id, :s => x_to_f(r.start.strftime("%R")),
-      :d => get_duration( r.start.strftime("%R"), r.end.strftime("%R") ),
-      :title => r.title, :details => r.details, :recurring => r.recurring,
-      :sdate => r.start.strftime("%m/%d/%Y"),
-      :edate => r.end.strftime("%m/%d/%Y"),
+      :id => r[0].room_id, :s => x_to_f(r[0].start.strftime("%R")),
+      :d => get_duration( r[0].start.strftime("%R"), r[0].end.strftime("%R") ),
+      :title => r[0].title, :details => r[0].details, :recurring => r[0].recurring,
+      :sdate => r[0].start.strftime("%m/%d/%Y"),
+      :edate => edate,
 #      :invitees => r.invitees_delimited,
       :update => true,
-      :reserveid => params[:reserveid],
+      :reserveid => params[:reserveid].to_i,
       :user_id => @user.id }
 
   end
@@ -814,7 +895,7 @@ post "/rest/reservations" do
   enddate   = params[:end]
   duration  = params[:duration]
 
-  if recur != 0 and recur != 4
+  if recur != 3 and recur != 4
     enddate = params[:start]
   end
 
@@ -839,7 +920,7 @@ post "/rest/reservations" do
       "Meeting is in conflict with another reservation."
   else
 
-    if recur == 1 or recur == 2 or recur == 3 or recur == 4
+    if recur == 0 or recur == 1 or recur == 2 or recur == 4
       seriesid = Digest::MD5.hexdigest(user.to_s + meetings.to_s)[0,10].downcase
     else
       seriesid = ""
@@ -856,7 +937,7 @@ post "/rest/reservations" do
 
     end
 
-    return Yajl::Encoder.encode("0, success")
+    return ""
 
   end
 
@@ -875,10 +956,8 @@ delete "/rest/reservations/:reserveid" do
   user = check_token
 
   if params[:recurring].nil?
-    logger.error "logic error delete reservation"
     halt 400, "Missing parameter recurring."
   else
-    logger.info params[:recurring]
 
     if params[:recurring] == "1"
       cancel_meeting( params[:reserveid].to_i, true )
@@ -888,7 +967,7 @@ delete "/rest/reservations/:reserveid" do
 
   end
 
-  return Yajl::Encoder.encode("Deleted successfully")
+  return ""
 
 end
 
@@ -968,38 +1047,9 @@ put "/rest/reservations/:reserveid" do
 
     end
 
-  elsif (recur > old_recur) or (recur == 0 and old_recur != 0)
-
-    logger.info "#{old_start} #{old_end}"
-# downgrade, remove old instances
-
-    Reservation.transaction do
-
-      downgrade_reservations( reservations, recur, roomid, title, details )
-
-      if old_start != s or old_end != e
-
-        if recur == 4
-          meetings = get_multi_day( roomid, s, enddate, duration )
-        else
-          meetings = get_recurring( roomid, recur, s, e )
-        end
-
-        if check_conflict( meetings, reserveid )
-          halt 409,
-            "Meeting is in conflict with another reservation."
-        else
-
-          update_reservations( reserveid, roomid, title, details, recur,
-            meetings, old_seriesid )
-
-        end
-
-      end
-
-    end
- 
-  elsif recur < old_recur
+  elsif (recur != old_recur) and (recur == 4 or old_recur == 4)
+# multi-day handler
+    logger.info "multi-day reservation modification"
 
     if recur == 4
       meetings = get_multi_day( roomid, s, enddate, duration )
@@ -1014,8 +1064,54 @@ put "/rest/reservations/:reserveid" do
 
       Reservation.transaction do
 
-        upgrade_reservations( reservations, meetings, recur, roomid, title,
-          details )
+        change_multi_day_reservations( reservations, roomid, title, details,
+          old_recur, recur, meetings, old_seriesid )
+
+      end
+
+    end
+
+  elsif recur > old_recur
+# downgrade
+    logger.info "downgrading reservation"
+
+    Reservation.transaction do
+
+      downgrade_reservations( reservations, old_recur, recur, roomid, title,
+        details )
+
+      if old_start != s or old_end != e
+
+        meetings = get_recurring( roomid, recur, s, e )
+
+        if check_conflict( meetings, reserveid )
+          halt 409,
+            "Meeting is in conflict with another reservation."
+        else
+
+          modify_reservations( reserveid, roomid, title, details, recur,
+            meetings, old_seriesid )
+
+        end
+
+      end
+
+    end
+
+# upgrade 
+  elsif recur < old_recur
+
+    meetings = get_recurring( roomid, recur, s, e )
+
+    if check_conflict( meetings, reserveid )
+      halt 409,
+        "Meeting is in conflict with another reservation."
+    else
+
+      Reservation.transaction do
+
+        upgrade_reservations( reservations, meetings, old_recur, recur,
+          roomid, title, details )
 
       end
 
@@ -1023,6 +1119,8 @@ put "/rest/reservations/:reserveid" do
 
 
   end
+
+  return ""
 
 end
 

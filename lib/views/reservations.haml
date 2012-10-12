@@ -46,7 +46,10 @@
           %input#datepicker2{ :type => "text", :placeholder => "end date", :value => "#{Date.today.strftime(     "%m/%d/%Y" )}", :disabled => "disabled" }
         - else
           %input#datepicker1{ :type => "text", :placeholder => "start date", :value => "#{sdate}" }
-          %input#datepicker2{ :type => "text", :placeholder => "end date", :value => "#{edate}", :disabled => "disabled" }
+          - if recurring == 4
+            %input#datepicker2{ :type => "text", :placeholder => "end date", :value => "#{edate}" }
+          - else
+            %input#datepicker2{ :type => "text", :placeholder => "end date", :value => "#{edate}", :disabled => "disabled" }
       %form.form-inline
         %select{ :id => "start" }
           - 12.times do |i|
@@ -73,17 +76,17 @@
           %option{ :id => "d7", :value => "12" } all day
         %span.error.hidden{ :id => "duration-error" } required
       %form.form-inline
-        %label.radio
-          %input#recur0{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "0", :checked => "checked" }
-            non-recurring
         %label.radio                                                            
-          %input#recur1{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "1" }
+          %input#recur3{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "3", :checked => "checked" }
+            non-recurring
+        %label.radio
+          %input#recur0{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "0" }
             weekly
         %label.radio                                                            
-          %input#recur2{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "2" }
+          %input#recur1{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "1" }
             bi-weekly
         %label.radio
-          %input#recur3{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "3" }
+          %input#recur2{ :type => "radio", :onclick => "single_day();", :name => "recurring", :value => "2" }
             monthly
         %label.radio
           %input#recur4{ :type => "radio", :onclick => "multi_day();", :name => "recurring", :value => "4" }
